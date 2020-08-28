@@ -10,14 +10,14 @@ real_board = chess.Board()
 class GameEngine():
     def __init__(self):
         self.board = [
-            ['br', 'bn', 'bb', 'bk', 'bq', 'bb', 'bn', 'br'],
+            ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-            ['wr', 'wn', 'wb', 'wk', 'wq', 'wb', 'wn', 'wr']
+            ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
         ]
         self.whiteTurn = True
         self.moveLog = []
@@ -25,20 +25,20 @@ class GameEngine():
     def get_legal_moves(self, piece):
         pass
 
-    def make_move(self, move):
+    def make_move(self, move, ext_board):
         if move.pieceMoved != '.':
             try:
-                real_move = chess.Move.from_uci(move.getChessNotation())
-                real_board.push(real_move)
+                # real_move = chess.Move.from_uci(move.getChessNotation())
+                print(move.getChessNotation(ext_board))
+                real_board.push_san(move.getChessNotation(ext_board))
                 self.board[move.startRow][move.startCol] = '.'
                 self.board[move.endRow][move.endCol] = move.pieceMoved
                 self.moveLog.append(move)
                 self.whiteTurn = not self.whiteTurn
-                print(move.getChessNotation())
-
-                print(real_board)
+            # print(real_board)
             except:
                 print("error")
+            # print(real_board)
 
 
 class Move():
@@ -57,8 +57,22 @@ class Move():
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
 
-    def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+    def getChessNotation(self, board):
+        piece = ''
+        if board[self.startRow][self.startCol] == 'br' or board[self.startRow][self.startCol] == 'wr':
+            piece = 'R'
+        if board[self.startRow][self.startCol] == 'bb' or board[self.startRow][self.startCol] == 'wb':
+            piece = 'B'
+        if board[self.startRow][self.startCol] == 'bn' or board[self.startRow][self.startCol] == 'wn':
+            piece = 'N'
+        if board[self.startRow][self.startCol] == 'bk' or board[self.startRow][self.startCol] == 'wk':
+            piece = 'K'
+        if board[self.startRow][self.startCol] == 'bq' or board[self.startRow][self.startCol] == 'wq':
+            piece = 'Q'
+        if board[self.startRow][self.startCol] == 'bp' or board[self.startRow][self.startCol] == 'wp':
+            piece = self.getRankFile(self.startRow, self.startCol)
+
+        return piece + self.getRankFile(self.endRow, self.endCol)
 
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]

@@ -79,7 +79,7 @@ def main():
                 if len(player_clicks) == 2:
                     move = GameEngine.Move(
                         player_clicks[0], player_clicks[1], ge.board)
-                    ge.make_move(move)
+                    ge.make_move(move, ge.board)
                     selected_square = ()
                     player_clicks = []
             update_board(screen, ge)
