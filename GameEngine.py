@@ -25,6 +25,10 @@ class GameEngine():
     def get_legal_moves(self, piece):
         pass
 
+    def ai_make_move(self, legal_moves):
+        for move in legal_moves:
+            print(move, end=" ")
+
     def make_move(self, move, ext_board):
         if move.pieceMoved != '.':
             try:
@@ -35,7 +39,7 @@ class GameEngine():
                 self.board[move.endRow][move.endCol] = move.pieceMoved
                 self.moveLog.append(move)
                 self.whiteTurn = not self.whiteTurn
-            # print(real_board)
+                # print(real_board.legal_moves)
             except:
                 print("error")
             # print(real_board)
