@@ -1,90 +1,85 @@
 import pygame
 import GameEngine
 
-WIDTH = HEIGHT = 512
+WIDTH = HEIGHT = 800
 DIMENSION = 8
-SQUARE_SIZE = WIDTH // DIMENSION
-
+SQUARE_SIZE = HEIGHT // DIMENSION
 IMAGES = {}
 
 
-def load_images():
-    pieces = ['br', 'bb', 'bn', 'bk', 'bq',
-              'bp', 'wr', 'wb', 'wn', 'wk', 'wq', 'wp']
-
-    for piece in pieces:
-        IMAGES[piece] = pygame.image.load('pieces/' + piece + '.png')
-
-
-def draw_board(screen):
-    colors = [pygame.Color("white"), pygame.Color("gray")]
-    for r in range(DIMENSION):
-        for c in range(DIMENSION):
-            color = colors[((r+c) % 2)]
-            pygame.draw.rect(screen, color, pygame.Rect(
-                c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+def drawBoard(screen):
+    colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
+    for row in range(DIMENSION):
+        for col in range(DIMENSION):
+            # (r+c) % 2 == 0 --> white
+            color = colors[(row + col) % 2]
+            pygame.draw.rect(screen, color, (row*SQUARE_SIZE,
+                                             col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
-def draw_pieces(screen, board):
+def drawPieces(screen, board):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             piece = board[r][c]
-            if piece != '.':
+            if piece != '--':
                 screen.blit(IMAGES[piece], pygame.Rect(
                     c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
-def update_board(screen, game_state):
-    draw_board(screen)
-    draw_pieces(screen, game_state.board)
+def loadImages():
+    pieces = ['br', 'bb', 'bn', 'bk', 'bq',
+              'bp', 'wr', 'wb', 'wn', 'wk', 'wq', 'wp']
+    for piece in pieces:
+        IMAGES[piece] = pygame.image.load('pieces/' + piece + '.png')
+        IMAGES[piece] = pygame.transform.scale(
+            IMAGES[piece], (SQUARE_SIZE, SQUARE_SIZE))
 
 
-# def make_move(game_engine, player_move):
-#     origin = player_move[0]  # Comes as a tuple
-#     destination = player_move[1]
-#     piece_to_move = game_engine.board[origin[0]][origin[1]]
-#     if piece_to_move == '.':
-#         return
-
-#     game_engine.board[origin[0]][origin[1]] = '.'
-#     game_engine.board[destination[0]][destination[1]] = piece_to_move
-
-#     game_engine.whiteTurn = not game_engine.whiteTurn  # Swaps turn
+def updateBoard(screen, gameState):
+    drawBoard(screen)
+    drawPieces(screen, gameState.board)
 
 
-def main():
+def display(board):
+    for r in range(DIMENSION):
+        for c in range(DIMENSION):
+            print(board[r][c], end=" ")
+        print()
+
+
+if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    screen.fill(pygame.Color('white'))
+    screen = pygame.display.set_mode([WIDTH, HEIGHT])
+    pygame.display.set_caption('Chess by Oscar')
+    loadImages()
+    playerClicks = []
+    selectedSquare = ()
+    gs = GameEngine.GameEngine()
+    while 1:
 
-    ge = GameEngine.GameEngine()
-    load_images()
-    game_over = False
-    selected_square = ()
-    player_clicks = []
-    while not game_over:
         for e in pygame.event.get():
+
             if e.type == pygame.QUIT:
-                game_over = True
+                pygame.quit()
+
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 coord = pygame.mouse.get_pos()
                 col = coord[0] // SQUARE_SIZE
                 row = coord[1] // SQUARE_SIZE
-                if selected_square == (row, col):
-                    selected_square = ()
-                    player_clicks = []
+                # If player clicks the same square twice
+                if selectedSquare == (row, col):
+                    selectedSquare = ()
+                    playerClicks = []
                 else:
-                    selected_square = (row, col)
-                    player_clicks.append(selected_square)
-                if len(player_clicks) == 2:
-                    move = GameEngine.Move(
-                        player_clicks[0], player_clicks[1], ge.board)
-                    ge.make_move(move, ge.board)
-                    selected_square = ()
-                    player_clicks = []
-            update_board(screen, ge)
+                    selectedSquare = (row, col)
+                    playerClicks.append(selectedSquare)
+                if len(playerClicks) == 2:
+                    # make move
+                    gs.makeMove(playerClicks)
+
+                    # Reset square and clicks
+                    selectedSquare = ()
+                    playerClicks = []
+
+            updateBoard(screen, gs)
             pygame.display.flip()
-
-
-if __name__ == '__main__':
-    main()
