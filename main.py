@@ -85,11 +85,10 @@ if __name__ == '__main__':
                     if move in legalMoves:
                         # make move
                         gs.makeMove(playerClicks)
-
-                    # Reset square and clicks
-                    selectedSquare = ()
-                    playerClicks = []
-                    legalMoves = []
+                        # Reset square and clicks
+                        selectedSquare = ()
+                        playerClicks = []
+                        legalMoves = []
 
             updateBoard(screen, gs)
             pygame.display.flip()

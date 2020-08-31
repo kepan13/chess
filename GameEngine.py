@@ -6,18 +6,18 @@ class GameEngine:
             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
             ['--', '--', '--', '--', '--', '--', '--', '--'],
             ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', 'wb', '--', '--', '--'],
             ['--', '--', '--', '--', '--', '--', '--', '--'],
-            ['--', '--', 'bp', '--', 'bp', '--', 'bp', '--'],
             ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
             ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
         ]
         self.whitesTurn = True
         self.moveLog = []
 
-    def getLegalMoves(self, piece):
-        legalMoves = []
-        if piece == 'br' or piece == 'wr':
-            legalMoves = rookLegalMoves()
+    # def getLegalMoves(self, piece):
+    #     legalMoves = []
+    #     if piece == 'br' or piece == 'wr':
+    #         legalMoves = rookLegalMoves()
 
     def makeMove(self, move):
         From = move[0]
@@ -53,13 +53,21 @@ class GameEngine:
         #             self.getPawnMoves(r, c)
         # turn = self.board[r][c][0]
         piece = self.board[row][col][1]
-        if piece == 'p':
+        if piece == 'p':  # pawn
             legalMoves = self.getPawnMoves(row, col)
-            print(legalMoves)
+        elif piece == 'r':  # rook
+            legalMoves = self.getRookMoves(row, col)
+        elif piece == 'b':  # bishop
+            legalMoves = self.getBishopMoves(row, col)
+        elif piece == 'q':
+            legalMoves = self.getBishopMoves(
+                row, col) + self.getRookMoves(row, col)
+        elif piece == 'k':
+            legalMoves = self.getKingMoves(row, col)
+        elif piece == 'n':
+            legalMoves = self.getKnightMoves(row, col)
+        print(legalMoves)
         return legalMoves
-
-    def getRookMoves(self, r, c):
-        pass
 
     def getPawnMoves(self, r, c):
         legalMoves = []
@@ -68,7 +76,7 @@ class GameEngine:
             if r-1 >= 0:
                 if self.board[r-1][c] == '--':
                     legalMoves.append(self.getChessNotation((r, c), (r-1, c)))
-            if r == 6:
+            if r == 6 and self.board[r-2][c] == '--':
                 legalMoves.append(self.getChessNotation((r, c), (r-2, c)))
             if r-1 >= 0 and c+1 <= 7:
                 if self.board[r-1][c+1][0] == 'b':
@@ -83,7 +91,7 @@ class GameEngine:
             if r+1 <= 7:
                 if self.board[r+1][c] == '--':
                     legalMoves.append(self.getChessNotation((r, c), (r+1, c)))
-            if r == 1:
+            if r == 1 and self.board[r+2][c] == '--':
                 legalMoves.append(self.getChessNotation((r, c), (r+2, c)))
             if r+1 <= 7 and c+1 <= 7:
                 if self.board[r+1][c+1][0] == 'w':
@@ -93,4 +101,73 @@ class GameEngine:
                 if self.board[r+1][c-1][0] == 'w':
                     legalMoves.append(
                         self.getChessNotation((r, c), (r+1, c-1)))
+        return legalMoves
+
+    def getRookMoves(self, r, c):
+        legalMoves = []
+        enemyColor = 'b' if self.whitesTurn else 'w'
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))
+        for d in directions:
+            for i in range(1, 8, 1):
+                row = r + d[0] * i
+                col = c + d[1] * i
+                if 0 <= row < 8 and 0 <= col < 8:
+                    endPiece = self.board[row][col]
+                    if endPiece == '--':
+                        legalMoves.append(
+                            self.getChessNotation((r, c), (row, col)))
+                    elif endPiece[0] == enemyColor:
+                        legalMoves.append(
+                            self.getChessNotation((r, c), (row, col)))
+                        break
+                    else:
+                        break
+                else:
+                    break
+        return legalMoves
+
+    def getBishopMoves(self, r, c):
+        legalMoves = []
+        enemyColor = 'b' if self.whitesTurn else 'w'
+        directions = ((-1, -1), (1, -1), (-1, 1), (1, 1))
+        for d in directions:
+            for i in range(1, 8, 1):
+                row = r + d[0] * i
+                col = c + d[1] * i
+                if 0 <= row < 8 and 0 <= col < 8:
+                    endPiece = self.board[row][col]
+                    if endPiece == '--':
+                        legalMoves.append(
+                            self.getChessNotation((r, c), (row, col)))
+                    elif endPiece[0] == enemyColor:
+                        legalMoves.append(
+                            self.getChessNotation((r, c), (row, col)))
+                    else:
+                        break
+                else:
+                    break
+        return legalMoves
+
+    def getKnightMoves(self, r, c):
+        pass
+
+    def getKingMoves(self, r, c):
+        legalMoves = []
+        enemyColor = 'b' if self.whitesTurn else 'w'
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))
+        for d in directions:
+            row = r + d[0] * 1
+            col = c + d[1] * 1
+            if 0 <= row < 8 and 0 <= col < 8:
+                endPiece = self.board[row][col]
+                if endPiece == '--':
+                    legalMoves.append(
+                        self.getChessNotation((r, c), (row, col)))
+                elif endPiece[0] == enemyColor:
+                    legalMoves.append(
+                        self.getChessNotation((r, c), (row, col)))
+                else:
+                    break
+            else:
+                break
         return legalMoves
