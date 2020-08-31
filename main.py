@@ -54,8 +54,10 @@ if __name__ == '__main__':
     loadImages()
     playerClicks = []
     selectedSquare = ()
-    legalMoves = []
     gs = GameEngine.GameEngine()
+    legalMoves = gs.getAllLegalMoves()
+    moveMade = False
+
     while 1:
 
         for e in pygame.event.get():
@@ -75,20 +77,19 @@ if __name__ == '__main__':
                     selectedSquare = (row, col)
                     playerClicks.append(selectedSquare)
 
-                # square to move from is selected, show all legal moves for this piece
-                if len(playerClicks) == 1:
-                    legalMoves = gs.getAllLegalMoves(playerClicks[0])
-
                 if len(playerClicks) == 2:
                     move = gs.getChessNotation(
                         (playerClicks[0]), (playerClicks[1]))
                     if move in legalMoves:
-                        # make move
                         gs.makeMove(playerClicks)
-                        # Reset square and clicks
+                        moveMade = True
                         selectedSquare = ()
                         playerClicks = []
-                        legalMoves = []
+                    else:
+                        playerClicks = [selectedSquare]
+            if moveMade:
+                legalMoves = gs.getAllLegalMoves()
+                moveMade = False
 
             updateBoard(screen, gs)
             pygame.display.flip()

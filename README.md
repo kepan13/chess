@@ -4,7 +4,6 @@ Creating a chess gui and AI
 
 # TODO
 
-start with minimax algorithm<br>
-King legal moves <br>
-Knight legal moves <br>
-So white cant move on blacks turn <br>
+Highlight squares where clicked piece can go <br>
+Checkmate, stalemate, promotion, en passant, castling
+LATER...start with minimax algorithm<br>
