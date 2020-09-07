@@ -9,4 +9,5 @@ pip install python-chess
 # TODO
 the minimax algorithm<br>
 highlight legal moves<br>
-showcase when check and check mate
+showcase when check and check mate<br>
+make promotion possible

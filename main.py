@@ -63,6 +63,8 @@ def make_move(startSq, endSq):
     # endCol = endSq[1]
     ugly_board[move.startRow][move.startCol] = '..'
     ugly_board[move.endRow][move.endCol] = move.pieceMoved
+    print(ugly_board)
+    print(board)
 
     moveLog.append(move)
 
@@ -102,13 +104,14 @@ while 1:
                 move = chess.Move.from_uci(res)
                 
                 if move in board.legal_moves:
-                    make_move(clicks[0], clicks[1])
                     board.push(move)
+                    make_move(clicks[0], clicks[1])
                     clicks = []
                     selectedSquare = ()
                     print(board.legal_moves)
                 else:
                     clicks = [selectedSquare]
+                    print(move in board.legal_moves)
         elif e.type == pygame.KEYDOWN:
             if e.key == pygame.K_z:
                 # undo move
