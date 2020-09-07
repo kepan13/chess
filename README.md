@@ -1,9 +1,12 @@
 # chess
 
 Creating a chess gui and AI
+# installation
+```
+pip install python-chess
+```
 
 # TODO
-
-Highlight squares where clicked piece can go <br>
-Checkmate, stalemate, promotion, en passant, castling
-LATER...start with minimax algorithm<br>
+the minimax algorithm<br>
+highlight legal moves<br>
+showcase when check and check mate
