@@ -1,6 +1,10 @@
 import chess
 import pygame
 import GameEngine
+import os
+
+current_path = os.path.dirname(__file__)
+image_path = os.path.join(current_path, 'pieces')
 
 def getChessNotation(startSq, endSq):
 
@@ -33,9 +37,9 @@ def loadImages():
     pieces = ['bR', 'bB', 'bN', 'bK', 'bQ',
               'bp', 'wR', 'wB', 'wN', 'wK', 'wQ', 'wp']
     for piece in pieces:
-        IMAGES[piece] = pygame.image.load('pieces/' + piece + '.png')
-        IMAGES[piece] = pygame.transform.scale(
-            IMAGES[piece], (SQUARE_SIZE, SQUARE_SIZE))
+        #IMAGES[piece] = pygame.image.load('pieces/' + piece + '.png')
+        IMAGES[piece] = pygame.image.load(os.path.join(image_path, piece + '.png'))
+        IMAGES[piece] = pygame.transform.scale(IMAGES[piece], (SQUARE_SIZE, SQUARE_SIZE))
 
 
 def drawBoard(screen):
@@ -60,9 +64,13 @@ def isPromotion(move):
     if move.pieceMoved[1] != 'p':
         return False
     if board.turn: # whites turn
+        if move.endRow != 1:
+            return False
         if ugly_board[move.endRow][move.endCol][0] == 'b':
             return True
     else:
+        if move.endRow != 6:
+            return False
         if ugly_board[move.endRow][move.endCol][0] == 'w':
             return True
     return False
@@ -71,6 +79,7 @@ def makeMove(move):
     ugly_board[move.startRow][move.startCol] = '..'
     ugly_board[move.endRow][move.endCol] = move.pieceMoved
     moveLog.append(move)
+    print(board)
 
 def makePromotion(move):
     color = 'w' if move.pieceMoved[0] == 'w' else 'b'
@@ -111,16 +120,19 @@ if __name__ == '__main__':
                     move = chess.Move.from_uci(res)
                     myMove = GameEngine.MoveGenerator(clicks[0], clicks[1], ugly_board)
                     if move in board.legal_moves:
-                        board.push(move)
-                        makeMove(myMove)
-                        clicks = []
-                        selectedSquare = ()
-                        # print(board.legal_moves)
-                    elif isPromotion(myMove) and not board.is_check():
-                        board.push_san(str(move) + 'q') # promote to queen
-                        makePromotion(myMove)
-                        clicks = []
-                        selectedSquare = ()
+                        if isPromotion(myMove):
+                            board.push_san(str(move) + 'q') # promote to queen
+                            makePromotion(myMove)
+                            clicks = []
+                            selectedSquare = ()
+                        elif isCastle(myMove):
+                            pass
+                        else:
+                            board.push(move)
+                            makeMove(myMove)
+                            clicks = []
+                            selectedSquare = ()
+                            # print(board.legal_moves)
                     else:
                         clicks = [selectedSquare]
                         # print(move in board.legal_moves)
