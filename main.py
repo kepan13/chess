@@ -16,6 +16,7 @@ SQUARE_SIZE = HEIGHT // DIMENSION
 IMAGES = {}
 moveLog = []
 
+board = chess.Board()
 
 ugly_board = [
                 ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
@@ -55,17 +56,26 @@ def updateBoard(screen):
     drawBoard(screen)
     drawPieces(screen)
 
-def make_move(startSq, endSq):
-    move = GameEngine.MoveGenerator(startSq, endSq, ugly_board)
-    # startRow = startSq[0]
-    # startCol = startSq[1]
-    # endRow = endSq[0]
-    # endCol = endSq[1]
+def isPromotion(move):
+    if move.pieceMoved[1] != 'p':
+        return False
+    if board.turn: # whites turn
+        if ugly_board[move.endRow][move.endCol][0] == 'b':
+            return True
+    else:
+        if ugly_board[move.endRow][move.endCol][0] == 'w':
+            return True
+    return False
+
+def makeMove(move):
     ugly_board[move.startRow][move.startCol] = '..'
     ugly_board[move.endRow][move.endCol] = move.pieceMoved
-    print(ugly_board)
-    print(board)
+    moveLog.append(move)
 
+def makePromotion(move):
+    color = 'w' if move.pieceMoved[0] == 'w' else 'b'
+    ugly_board[move.startRow][move.startCol] = '..'
+    ugly_board[move.endRow][move.endCol] = color + 'Q'
     moveLog.append(move)
 
 def undoMove():
@@ -74,52 +84,52 @@ def undoMove():
     ugly_board[move.endRow][move.endCol] = move.pieceCaptured
     
 
+if __name__ == '__main__':
+    pygame.init()
+    screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
-pygame.init()
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-
-board = chess.Board()
-print(board)
-loadImages()
-selectedSquare = ()
-clicks = []
-print(board.legal_moves)
-while 1:
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            pygame.quit()
-        elif e.type == pygame.MOUSEBUTTONDOWN:
-            (x, y) = pygame.mouse.get_pos()
-            col = x // SQUARE_SIZE
-            row = y // SQUARE_SIZE
-            if selectedSquare == (row, col):
-                selectedSquare = ()
-                clicks = []
-            else:
-                selectedSquare = (row, col)
-                clicks.append(selectedSquare)
-            
-            if len(clicks) == 2:
-                res = getChessNotation(clicks[0], clicks[1])
-                move = chess.Move.from_uci(res)
-                
-                if move in board.legal_moves:
-                    board.push(move)
-                    make_move(clicks[0], clicks[1])
-                    clicks = []
+    loadImages()
+    selectedSquare = ()
+    clicks = []
+    while 1:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+            elif e.type == pygame.MOUSEBUTTONDOWN:
+                (x, y) = pygame.mouse.get_pos()
+                col = x // SQUARE_SIZE
+                row = y // SQUARE_SIZE
+                if selectedSquare == (row, col):
                     selectedSquare = ()
-                    print(board.legal_moves)
+                    clicks = []
                 else:
-                    clicks = [selectedSquare]
-                    print(move in board.legal_moves)
-        elif e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_z:
-                # undo move
-                if len(moveLog):
-                    board.pop()
-                    undoMove()
-                    print(board)
-
-
-    updateBoard(screen)
-    pygame.display.flip()
+                    selectedSquare = (row, col)
+                    clicks.append(selectedSquare)
+                
+                if len(clicks) == 2:
+                    res = getChessNotation(clicks[0], clicks[1])
+                    move = chess.Move.from_uci(res)
+                    myMove = GameEngine.MoveGenerator(clicks[0], clicks[1], ugly_board)
+                    if move in board.legal_moves:
+                        board.push(move)
+                        makeMove(myMove)
+                        clicks = []
+                        selectedSquare = ()
+                        # print(board.legal_moves)
+                    elif isPromotion(myMove) and not board.is_check():
+                        board.push_san(str(move) + 'q') # promote to queen
+                        makePromotion(myMove)
+                        clicks = []
+                        selectedSquare = ()
+                    else:
+                        clicks = [selectedSquare]
+                        # print(move in board.legal_moves)
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_z:
+                    # undo move
+                    if len(moveLog):
+                        board.pop()
+                        undoMove()
+                        print(board)
+        updateBoard(screen)
+        pygame.display.flip()
