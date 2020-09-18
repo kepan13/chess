@@ -17,7 +17,6 @@ def getChessNotation(startSq, endSq):
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
-moveLog = []
 board = chess.Board()
 
 ugly_board = [
@@ -127,6 +126,20 @@ def updateBoard(screen):
     drawBoard(screen)
     drawPieces(screen)
 
+def isPromotion(move):
+    if board.turn: # whites turn
+        if move.pieceMoved != 'P':
+            return False
+        if move.startRow == 1 and move.endRow == 0:
+            return True
+    else: # blacks turn
+        if move.pieceMoved != 'p':
+            return False
+        if move.startRow == 6 and move.endRow == 7:
+            return True
+    
+
+
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -153,12 +166,13 @@ if __name__ == '__main__':
                     res = getChessNotation(clicks[0], clicks[1])
                     move = chess.Move.from_uci(res)
                     myMove = GameEngine.MoveGenerator(clicks[0], clicks[1], ugly_board)
-                    print(move.promotion)
                     if move in board.legal_moves:
                         board.push(move)
                         moveMade = True
-                        moveLog.append(move)
                         # print(board)
+                    elif isPromotion(myMove) and not board.is_check():
+                        board.push_san(str(move) + 'q')
+                        moveMade = True
                     else:
                         clicks = [selectedSquare]
                     if (moveMade): # reset clicks
@@ -168,7 +182,7 @@ if __name__ == '__main__':
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:
                     # undo move
-                    if len(moveLog):
+                    if len(board.move_stack) > 0:
                         board.pop()
                         print(board)
         updateBoard(screen)
