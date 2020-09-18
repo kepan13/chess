@@ -5,6 +5,9 @@ Creating a chess gui and AI
 ```
 pip install python-chess
 ```
+```
+pip install pygame
+```
 
 # TODO
 light up kings square while in check <br>
