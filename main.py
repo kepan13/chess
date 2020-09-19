@@ -85,12 +85,17 @@ def setBoardAfterFEN():
             row += 1
             col = 0
 
-def drawBoard(screen):
+def drawBoard(screen, highlightSq):
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             color = colors[(row + col) % 2]
             pygame.draw.rect(screen, color, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    if len(highlightSq):
+        row = highlightSq[1]
+        col = highlightSq[0]
+        highlightColor = (0, 200, 0)
+        pygame.draw.rect(screen, highlightColor, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 def drawPieces(screen):
     for r in range(DIMENSION):
@@ -121,9 +126,9 @@ def drawPieces(screen):
             elif piece == 'K':
                 screen.blit(whiteKing, pygame.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-def updateBoard(screen):
+def updateBoard(screen, highlightSq):
     setBoardAfterFEN()
-    drawBoard(screen)
+    drawBoard(screen, highlightSq)
     drawPieces(screen)
 
 def isPromotion(move):
@@ -185,5 +190,5 @@ if __name__ == '__main__':
                     if len(board.move_stack) > 0:
                         board.pop()
                         print(board)
-        updateBoard(screen)
+        updateBoard(screen, selectedSquare)
         pygame.display.flip()
