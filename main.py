@@ -2,12 +2,12 @@ import chess
 import pygame
 import GameEngine
 import os
+from random import randrange
 
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
 
 def getChessNotation(startSq, endSq):
-
     intToFile = {0:'a', 1:'b', 2:'c', 3:'d', 4: 'e',
                 5: 'f', 6:'g', 7:'h'}
     intToRank = {0: '8',1: '7', 2: '6', 3: '5', 4: '4',
@@ -132,7 +132,7 @@ def updateBoard(screen, highlightSq):
     drawPieces(screen)
 
 def isPromotion(move):
-    if board.turn: # whites turn
+    if isWhitesTurn(): # whites turn
         if move.pieceMoved != 'P':
             return False
         if move.startRow == 1 and move.endRow == 0:
@@ -143,7 +143,19 @@ def isPromotion(move):
         if move.startRow == 6 and move.endRow == 7:
             return True
     
+def isWhitesTurn():
+    return board.turn
 
+def minimax():
+    moves = []
+    for move in board.legal_moves:
+        moves.append(move)
+    if len(moves) == 0:
+        print('Check mate!')
+        input()
+    move = moves[randrange(len(moves))]
+    board.push(move)
+    
 
 if __name__ == '__main__':
     pygame.init()
@@ -156,34 +168,37 @@ if __name__ == '__main__':
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
-            elif e.type == pygame.MOUSEBUTTONDOWN:
-                (x, y) = pygame.mouse.get_pos()
-                col = x // SQUARE_SIZE
-                row = y // SQUARE_SIZE
-                if selectedSquare == (row, col):
-                    selectedSquare = ()
-                    clicks = []
-                else:
-                    selectedSquare = (row, col)
-                    clicks.append(selectedSquare)
-                
-                if len(clicks) == 2:
-                    res = getChessNotation(clicks[0], clicks[1])
-                    move = chess.Move.from_uci(res)
-                    myMove = GameEngine.MoveGenerator(clicks[0], clicks[1], ugly_board)
-                    if move in board.legal_moves:
-                        board.push(move)
-                        moveMade = True
-                        # print(board)
-                    elif isPromotion(myMove) and not board.is_check():
-                        board.push_san(str(move) + 'q')
-                        moveMade = True
-                    else:
-                        clicks = [selectedSquare]
-                    if (moveMade): # reset clicks
-                        clicks = []
+            elif isWhitesTurn():
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    (x, y) = pygame.mouse.get_pos()
+                    col = x // SQUARE_SIZE
+                    row = y // SQUARE_SIZE
+                    if selectedSquare == (row, col):
                         selectedSquare = ()
-                        # print(board.legal_moves)
+                        clicks = []
+                    else:
+                        selectedSquare = (row, col)
+                        clicks.append(selectedSquare)
+                    
+                    if len(clicks) == 2:
+                        res = getChessNotation(clicks[0], clicks[1])
+                        move = chess.Move.from_uci(res)
+                        myMove = GameEngine.MoveGenerator(clicks[0], clicks[1], ugly_board)
+                        if move in board.legal_moves:
+                            board.push(move)
+                            moveMade = True
+                            # print(board)
+                        elif isPromotion(myMove) and not board.is_check():
+                            board.push_san(str(move) + 'q')
+                            moveMade = True
+                        else:
+                            clicks = [selectedSquare]
+                        if (moveMade): # reset clicks
+                            clicks = []
+                            selectedSquare = ()
+                            # print(board.legal_moves)
+            elif not isWhitesTurn():
+                minimax()
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:
                     # undo move
