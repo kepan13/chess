@@ -7,12 +7,9 @@ from random import randrange
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
 
-def getChessNotation(startSq, endSq):
-    intToFile = {0:'a', 1:'b', 2:'c', 3:'d', 4: 'e',
-                5: 'f', 6:'g', 7:'h'}
-    intToRank = {0: '8',1: '7', 2: '6', 3: '5', 4: '4',
-                5: '3', 6: '2', 7: '1'}
-    return intToFile[startSq[1]] + intToRank[startSq[0]] + intToFile[endSq[1]] + intToRank[endSq[0]]
+
+
+    
 
 WIDTH = HEIGHT = 800
 DIMENSION = 8
@@ -66,6 +63,15 @@ whiteKing = pygame.transform.scale(whiteKing, (SQUARE_SIZE, SQUARE_SIZE))
 whitePawn = pygame.image.load(os.path.join(image_path, 'wp' + '.png'))
 whitePawn = pygame.transform.scale(whitePawn, (SQUARE_SIZE, SQUARE_SIZE))
 
+def getChessNotation(startSq, endSq):
+    intToFile = {0:'a', 1:'b', 2:'c', 3:'d', 4: 'e',
+                5: 'f', 6:'g', 7:'h'}
+    intToRank = {0: '8',1: '7', 2: '6', 3: '5', 4: '4',
+                5: '3', 6: '2', 7: '1'}
+    return intToFile[startSq[1]] + intToRank[startSq[0]] + intToFile[endSq[1]] + intToRank[endSq[0]]
+
+
+
 def setBoardAfterFEN():
     board_fen = board.fen()
     row = 0
@@ -84,6 +90,13 @@ def setBoardAfterFEN():
         else: # means we reached a '\' and need to go down a row
             row += 1
             col = 0
+
+def print_board(b):
+    for i in range(8):
+        for j in range(8):
+            print(b[i][j], end="")
+        print()
+    print()
 
 def drawBoard(screen, highlightSq):
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
@@ -132,6 +145,8 @@ def updateBoard(screen, highlightSq):
     drawPieces(screen)
 
 def isPromotion(move):
+    if move.pieceCaptured != '.':
+        return False
     if isWhitesTurn(): # whites turn
         if move.pieceMoved != 'P':
             return False
@@ -146,14 +161,61 @@ def isPromotion(move):
 def isWhitesTurn():
     return board.turn
 
+def getPieceCaptured(chessNotation):
+    startFile = chessNotation[0]
+    startRank = chessNotation[1]
+    endFile = chessNotation[2]
+    endRank = chessNotation[3]
+    fileToRow = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7 }
+    rankToCol = {'8':0, '7':1, '6':2, '5':3, '4':4, '3':5, '2':6, '1':7 }
+    # move = GameEngine.MoveGenerator((fileToRow[startFile], rankToCol[startRank]), (fileToRow[endFile], fileToRow[endRank]), ugly_board)
+    # return move.pieceCaptured
+    startSq = (fileToRow[startFile], rankToCol[startRank])
+    endSq = (fileToRow[endFile], rankToCol[endRank])
+    move = GameEngine.MoveGenerator(startSq, endSq, ugly_board)
+
+    return move.pieceCaptured
+    
+def getPieceValue(move):
+    piece = getPieceCaptured(move)
+    piece = piece.upper()
+    if piece == 'P':
+        return 10
+    elif piece == 'N':
+        return 30
+    elif piece == 'B':
+        return 30
+    elif piece == 'Q':
+        return 90
+    elif piece == 'R':
+        return 50
+    else:
+        return 0
+
 def minimax():
     moves = []
+    moveValue = 0
+    bestMove = -9999
+    moveIndex = 0
+
     for move in board.legal_moves:
         moves.append(move)
+    for i in range(len(moves)):
+        if board.is_capture(moves[i]):
+            # print(moves[i])
+            moveValue = getPieceValue(str(moves[i]))
+            if moveValue >= bestMove:
+                bestMove = moveValue
+                moveIndex = i
+            
+            
     if len(moves) == 0:
         print('Check mate!')
         input()
-    move = moves[randrange(len(moves))]
+        sys.exit(1)
+    
+
+    move = moves[moveIndex]
     board.push(move)
     
 
@@ -168,6 +230,12 @@ if __name__ == '__main__':
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_z:
+                    # undo move
+                    if len(board.move_stack) > 0:
+                        board.pop()
+                        print(board)
             elif isWhitesTurn():
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     (x, y) = pygame.mouse.get_pos()
@@ -199,11 +267,6 @@ if __name__ == '__main__':
                             # print(board.legal_moves)
             elif not isWhitesTurn():
                 minimax()
-            elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_z:
-                    # undo move
-                    if len(board.move_stack) > 0:
-                        board.pop()
-                        print(board)
+
         updateBoard(screen, selectedSquare)
         pygame.display.flip()
