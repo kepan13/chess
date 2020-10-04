@@ -160,22 +160,14 @@ def isPromotion(move):
     
 def isWhitesTurn():
     return board.turn
-
-def getPieceCaptured(chessNotation):
-    startFile = chessNotation[0]
-    startRank = chessNotation[1]
-    endFile = chessNotation[2]
-    endRank = chessNotation[3]
+    
+def getPieceCaptured(endSq):
     fileToRow = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7 }
     rankToCol = {'8':0, '7':1, '6':2, '5':3, '4':4, '3':5, '2':6, '1':7 }
-    # move = GameEngine.MoveGenerator((fileToRow[startFile], rankToCol[startRank]), (fileToRow[endFile], fileToRow[endRank]), ugly_board)
-    # return move.pieceCaptured
-    startSq = (fileToRow[startFile], rankToCol[startRank])
-    endSq = (fileToRow[endFile], rankToCol[endRank])
-    move = GameEngine.MoveGenerator(startSq, endSq, ugly_board)
+    row = fileToRow[endSq[0]]
+    col = rankToCol[endSq[1]]
+    return ugly_board[col][row]
 
-    return move.pieceCaptured
-    
 def getPieceValue(move):
     piece = getPieceCaptured(move)
     piece = piece.upper()
@@ -202,21 +194,23 @@ def minimax():
         moves.append(move)
     for i in range(len(moves)):
         if board.is_capture(moves[i]):
-            # print(moves[i])
-            moveValue = getPieceValue(str(moves[i]))
+            squareToCheck = str(moves[i])
+            squareToCheck = squareToCheck[2:] # only last part of chess notaT
+            moveValue = getPieceValue(squareToCheck)
+            print(moveValue)
             if moveValue >= bestMove:
                 bestMove = moveValue
                 moveIndex = i
             
-            
     if len(moves) == 0:
         print('Check mate!')
         input()
-        sys.exit(1)
-    
-
+        os.sys.exit(1)
+    if bestMove == -9999:
+        moveIndex = randrange(len(moves))
     move = moves[moveIndex]
     board.push(move)
+    # print_board(ugly_board)
     
 
 if __name__ == '__main__':
@@ -235,7 +229,8 @@ if __name__ == '__main__':
                     # undo move
                     if len(board.move_stack) > 0:
                         board.pop()
-                        print(board)
+                        board.pop()
+                        # print(board)
             elif isWhitesTurn():
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     (x, y) = pygame.mouse.get_pos()
@@ -264,9 +259,15 @@ if __name__ == '__main__':
                         if (moveMade): # reset clicks
                             clicks = []
                             selectedSquare = ()
+                            # moveMade = False
                             # print(board.legal_moves)
             elif not isWhitesTurn():
                 minimax()
+                moveMade = True
+
 
         updateBoard(screen, selectedSquare)
         pygame.display.flip()
+        if moveMade:
+            # print_board(ugly_board)
+            moveMade = False
