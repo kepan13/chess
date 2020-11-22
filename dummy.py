@@ -35,14 +35,12 @@ def draw_board(screen):
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     row = 0
     col = 0
-    print(a)
     for i in a:
         if i.isnumeric():
             '''Blank squares'''
             for j in range(int(i)):
                 color = colors[(row + col) % 2]
                 pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-                # print(f"From isnumeric() row: {row} col: {col}")
                 col += 1
 
         elif i.isalpha():
@@ -54,7 +52,6 @@ def draw_board(screen):
             pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
             screen.blit(dict_pieces[i], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-            # print(f"From isalpha() row: {row} col: {col}")
             col += 1
 
         elif i == ' ': # stop parsing, end of FEN
@@ -63,6 +60,15 @@ def draw_board(screen):
             row += 1
             col = 0
 
+def get_move(start, end):
+    '''converts col row to chess notation i.e. 0,6 -> 0,5 becomes a2a3'''
+    col_to_file = ['a','b','c','d','e','f','g','h']
+    row_to_rank = ['8','7','6','5','4','3','2','1']
+
+    start_sq = col_to_file[ start[0] ] + row_to_rank[ start[1] ]
+    end_sq = col_to_file[ end[0] ] + row_to_rank[ end[1] ]
+
+    return start_sq + end_sq
 
 if __name__ == '__main__':
     pygame.init()
@@ -71,9 +77,28 @@ if __name__ == '__main__':
     draw_board(screen)
     pygame.display.flip()
 
+    '''To get players move'''
+    clicked_square = ()
+    clicks = []
+
     while 1:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
-
-
+            
+            elif e.type == pygame.MOUSEBUTTONDOWN:
+                (x, y) = pygame.mouse.get_pos()
+                col = x // SQUARE_SIZE
+                row = y // SQUARE_SIZE
+                if clicked_square == (col, row):
+                    clicked_square = ()
+                    clicks = []
+                else:
+                    clicked_square = (col, row)
+                    clicks.append(clicked_square)
+            
+            if len(clicks) == 2:
+                move = get_move(clicks[0], clicks[1])
+                print(move)
+                clicks = []
+                clicked_square = []
