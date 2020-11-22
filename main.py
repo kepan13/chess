@@ -59,7 +59,6 @@ def getChessNotation(startSq, endSq):
     return intToFile[startSq[1]] + intToRank[startSq[0]] + intToFile[endSq[1]] + intToRank[endSq[0]]
 
 
-
 def setBoardAfterFEN():
     board_fen = board.fen()
     row = 0
@@ -79,12 +78,14 @@ def setBoardAfterFEN():
             row += 1
             col = 0
 
+
 def print_board(b):
     for i in range(8):
         for j in range(8):
             print(b[i][j], end="")
         print()
     print()
+
 
 def drawBoard(screen, highlightSq):
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
@@ -97,6 +98,7 @@ def drawBoard(screen, highlightSq):
         col = highlightSq[0]
         highlightColor = (0, 200, 0)
         pygame.draw.rect(screen, highlightColor, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
 
 def drawPieces(screen):
     for r in range(DIMENSION):
@@ -127,10 +129,12 @@ def drawPieces(screen):
             elif piece == 'K':
                 screen.blit(whiteKing, pygame.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
+
 def updateBoard(screen, highlightSq):
     setBoardAfterFEN()
     drawBoard(screen, highlightSq)
     drawPieces(screen)
+
 
 def isPromotion(move):
     if move.pieceCaptured != '.':
@@ -146,15 +150,18 @@ def isPromotion(move):
         if move.startRow == 6 and move.endRow == 7:
             return True
     
+
 def isWhitesTurn():
     return board.turn
     
+
 def getPieceCaptured(endSq):
     fileToRow = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7 }
     rankToCol = {'8':0, '7':1, '6':2, '5':3, '4':4, '3':5, '2':6, '1':7 }
     row = fileToRow[endSq[0]]
     col = rankToCol[endSq[1]]
     return ugly_board[col][row]
+
 
 def getPieceValue(move):
     piece = getPieceCaptured(move)
@@ -171,6 +178,7 @@ def getPieceValue(move):
         return 50
     else:
         return 0
+
 
 def notMiniMax():
     moves = []

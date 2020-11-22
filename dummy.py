@@ -74,8 +74,6 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
-    draw_board(screen)
-    pygame.display.flip()
 
     '''To get players move'''
     clicked_square = ()
@@ -99,6 +97,18 @@ if __name__ == '__main__':
             
             if len(clicks) == 2:
                 move = get_move(clicks[0], clicks[1])
-                print(move)
-                clicks = []
-                clicked_square = []
+                move = chess.Move.from_uci(move)
+                if move in board.legal_moves:
+                    board.push(move)
+                    clicks = []
+                    clicked_square = []
+                elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
+                '''Check if it is promotion time'''
+                    move = chess.Move.from_uci(str(move)+'q')
+                    board.push(move)
+                    clicks = []
+                    clicked_square = []
+                else:
+                    clicks = [clicked_square]
+        draw_board(screen)
+        pygame.display.flip()
