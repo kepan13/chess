@@ -21,7 +21,6 @@ class MoveGenerator():
             return self.moveID == other.moveID
         return False
 
-
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 

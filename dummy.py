@@ -26,6 +26,9 @@ w_pawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wp' 
 
 dict_pieces = {'P': w_pawn, 'R': w_rook, 'N': w_knight, 'B': w_bishop, 'Q': w_queen, 'K': w_king, 'p': b_pawn, 'r': b_rook, 'n': b_knight, 'b': b_bishop, 'q': b_queen, 'k': b_king}
 
+'''Fill a dict with square names. key = chess.SQUARE_NAMES i.e. a1 a2... value = chess.SQUARES chess.A1 chess.A2...'''
+dict_squares = {}
+
 '''Main board'''
 board = chess.Board()
 
@@ -60,6 +63,15 @@ def draw_board(screen):
             row += 1
             col = 0
 
+
+
+def fill_squares_dict():
+    for i in range(64):
+        dict_squares[chess.SQUARE_NAMES[i]] = chess.SQUARES[i]
+
+def minimax():
+    print(board.piece_at(chess.E1), )
+
 def get_move(start, end):
     '''converts col row to chess notation i.e. 0,6 -> 0,5 becomes a2a3'''
     col_to_file = ['a','b','c','d','e','f','g','h']
@@ -70,7 +82,16 @@ def get_move(start, end):
 
     return start_sq + end_sq
 
+def get_piece(move):
+    '''returns piece taken kind of...
+        capital letter -> black piece
+        else           -> white piece'''
+    a = str(move)[2:]
+    print(f"square: {a} piece: {board.piece_at(dict_squares[a])}")
+
 if __name__ == '__main__':
+    # maybe make a general init()
+    fill_squares_dict()
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
@@ -83,6 +104,11 @@ if __name__ == '__main__':
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
+
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_z:
+                    if len(board.move_stack) > 0:
+                        board.pop()
             
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 (x, y) = pygame.mouse.get_pos()
@@ -96,14 +122,17 @@ if __name__ == '__main__':
                     clicks.append(clicked_square)
             
             if len(clicks) == 2:
+                # minimax()
                 move = get_move(clicks[0], clicks[1])
                 move = chess.Move.from_uci(move)
                 if move in board.legal_moves:
+                    get_piece(move)
+
                     board.push(move)
                     clicks = []
                     clicked_square = []
                 elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                '''Check if it is promotion time'''
+                    '''Check if it is promotion time'''
                     move = chess.Move.from_uci(str(move)+'q')
                     board.push(move)
                     clicks = []
