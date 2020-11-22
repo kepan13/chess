@@ -7,10 +7,6 @@ from random import randrange
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
 
-
-
-    
-
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
@@ -27,41 +23,33 @@ ugly_board = [
                 ['.', '.', '.', '.', '.', '.', '.', '.']
             ]
 
-blackRook = pygame.image.load(os.path.join(image_path, 'bR' + '.png'))
-blackRook = pygame.transform.scale(blackRook, (SQUARE_SIZE, SQUARE_SIZE))
+blackRook = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bR' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-blackKnight = pygame.image.load(os.path.join(image_path, 'bN' + '.png'))
-blackKnight = pygame.transform.scale(blackKnight, (SQUARE_SIZE, SQUARE_SIZE))
+blackKnight = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bN' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-blackBishop = pygame.image.load(os.path.join(image_path, 'bB' + '.png'))
-blackBishop = pygame.transform.scale(blackBishop, (SQUARE_SIZE, SQUARE_SIZE))
 
-blackQueen = pygame.image.load(os.path.join(image_path, 'bQ' + '.png'))
-blackQueen = pygame.transform.scale(blackQueen, (SQUARE_SIZE, SQUARE_SIZE))
+blackBishop = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bB' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-blackKing = pygame.image.load(os.path.join(image_path, 'bK' + '.png'))
-blackKing = pygame.transform.scale(blackKing, (SQUARE_SIZE, SQUARE_SIZE))
 
-blackPawn = pygame.image.load(os.path.join(image_path, 'bp' + '.png'))
-blackPawn = pygame.transform.scale(blackPawn, (SQUARE_SIZE, SQUARE_SIZE))
+blackQueen = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bQ' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-whiteRook = pygame.image.load(os.path.join(image_path, 'wR' + '.png'))
-whiteRook = pygame.transform.scale(whiteRook, (SQUARE_SIZE, SQUARE_SIZE))
 
-whiteKnight = pygame.image.load(os.path.join(image_path, 'wN' + '.png'))
-whiteKnight = pygame.transform.scale(whiteKnight, (SQUARE_SIZE, SQUARE_SIZE))
+blackKing = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bK' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-whiteBishop = pygame.image.load(os.path.join(image_path, 'wB' + '.png'))
-whiteBishop = pygame.transform.scale(whiteBishop, (SQUARE_SIZE, SQUARE_SIZE))
 
-whiteQueen = pygame.image.load(os.path.join(image_path, 'wQ' + '.png'))
-whiteQueen = pygame.transform.scale(whiteQueen, (SQUARE_SIZE, SQUARE_SIZE))
+blackPawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bp' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-whiteKing = pygame.image.load(os.path.join(image_path, 'wK' + '.png'))
-whiteKing = pygame.transform.scale(whiteKing, (SQUARE_SIZE, SQUARE_SIZE))
+whiteRook = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wR' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-whitePawn = pygame.image.load(os.path.join(image_path, 'wp' + '.png'))
-whitePawn = pygame.transform.scale(whitePawn, (SQUARE_SIZE, SQUARE_SIZE))
+whiteKnight = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wN' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
+
+whiteBishop = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wB' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
+
+whiteQueen = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wQ' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
+
+whiteKing = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wK' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
+
+whitePawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wp' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
 def getChessNotation(startSq, endSq):
     intToFile = {0:'a', 1:'b', 2:'c', 3:'d', 4: 'e',
@@ -184,7 +172,7 @@ def getPieceValue(move):
     else:
         return 0
 
-def minimax():
+def notMiniMax():
     moves = []
     moveValue = 0
     bestMove = -9999
@@ -192,6 +180,7 @@ def minimax():
 
     for move in board.legal_moves:
         moves.append(move)
+
     for i in range(len(moves)):
         if board.is_capture(moves[i]):
             squareToCheck = str(moves[i])
@@ -212,6 +201,44 @@ def minimax():
     board.push(move)
     # print_board(ugly_board)
     
+def minimax(depth, isMaximising):
+    print(depth)
+    if depth == 0:
+        return 0
+    moves = []
+    moveValue = 0
+    moveIndex = 0
+    for move in board.legal_moves:
+        moves.append(move)
+    
+    if isMaximising:
+        bestMove = -9999
+        for i in range(len(moves)):
+            squareToCheck = str(moves[i])
+            squareToCheck = squareToCheck[2:] # only last part of chess notaT
+            moveValue = getPieceValue(squareToCheck)
+            
+            board.push(moves[i])
+            moveValue = minimax(depth-1, not isMaximising)
+            board.pop()
+            if (moveValue >= bestMove):
+                bestMove = moveValue
+                moveIndex = i
+            return bestMove
+    else:
+        bestMove = 9999
+        for i in range(len(moves)):
+            board.push(moves[i])
+            moveValue = minimax(depth-1, not isMaximising)
+            board.pop()
+            if (moveValue >= bestMove):
+                bestMove = moveValue
+                moveIndex
+            return bestMove
+    move = moves[moveIndex]
+    board.push(move)
+
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -262,7 +289,8 @@ if __name__ == '__main__':
                             # moveMade = False
                             # print(board.legal_moves)
             elif not isWhitesTurn():
-                minimax()
+                # notMiniMax()
+                minimax(3, True)
                 moveMade = True
 
 
