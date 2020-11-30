@@ -1,6 +1,8 @@
 import chess
 import pygame
 import os
+import random
+import time
 
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
@@ -29,11 +31,9 @@ dict_pieces = {'P': w_pawn, 'R': w_rook, 'N': w_knight, 'B': w_bishop, 'Q': w_qu
 '''Fill a dict with square names. key = chess.SQUARE_NAMES i.e. a1 a2... value = chess.SQUARES chess.A1 chess.A2...'''
 dict_squares = {}
 
-'''Main board'''
-board = chess.Board()
 
 '''Draws both squares and pieces'''
-def draw_board(screen):
+def draw_board(screen, board):
     a = board.fen()
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     row = 0
@@ -64,13 +64,85 @@ def draw_board(screen):
             col = 0
 
 
-
 def fill_squares_dict():
     for i in range(64):
         dict_squares[chess.SQUARE_NAMES[i]] = chess.SQUARES[i]
 
-def minimax():
-    print(board.piece_at(chess.E1), )
+
+pawn_eval_white = []
+
+def minimax_root(depth, board):
+    leg_moves = board.legal_moves
+    final_move = None
+    best_value = -9999
+    for i_move in leg_moves:
+        move = chess.Move.from_uci(str(i_move))
+        board.push(move)
+        value = minimax(depth, board, -100, 100, False)
+        board.pop()
+        print(value, move)
+        if value > best_value:
+            best_value = value
+            final_move = move
+            print(f"Value: {best_value}")
+            print(f"Move: {final_move}")
+    return final_move
+
+def minimax(depth,board, alpha, beta, is_max):
+    if depth == 0:
+        return evaluation(board)
+    leg_moves = board.legal_moves
+    if is_max:
+        value = -9999
+        for i_move in leg_moves:
+            move = chess.Move.from_uci(str(i_move))
+            board.push(move)
+            value = max(value, minimax(depth - 1, board, alpha, beta, False))
+            board.pop()
+            alpha = max(alpha, value)
+            if beta <= alpha:
+                return value
+        return value
+    else:
+        value = 9999
+        for i_move in leg_moves:
+            move = chess.Move.from_uci(str(i_move))
+            board.push(move)
+            value = min(value, minimax(depth - 1, board, alpha, beta, True))
+            board.pop()
+            beta = min(beta, value)
+            if(beta <= alpha):
+                return value
+        return value
+
+def evaluation(board):
+    total = 0
+    for i in range(64):
+        total += getPieceValue(board.piece_at(i))
+    print(total)
+    return total
+
+def getPieceValue(piece):
+    piece = str(piece)
+    if(piece == None):
+        return 0
+    multiplier = 1
+    if piece.isupper():
+        multiplier = -1
+    value = 0
+    if piece == "P" or piece == "p":
+        value = 10
+    elif piece == "N" or piece == "n":
+        value = 30
+    elif piece == "B" or piece == "b":
+        value = 30
+    elif piece == "R" or piece == "r":
+        value = 50
+    elif piece == "Q" or piece == "q":
+        value = 90
+    elif piece == 'K' or piece == 'k':
+        value = 900
+    return value * multiplier
 
 def get_move(start, end):
     '''converts col row to chess notation i.e. 0,6 -> 0,5 becomes a2a3'''
@@ -82,23 +154,33 @@ def get_move(start, end):
 
     return start_sq + end_sq
 
-def get_piece(move):
-    '''returns piece taken kind of...
+def get_piece(board, move):
+    ''' returns piece taken kind of
         capital letter -> black piece
-        else           -> white piece'''
-    a = str(move)[2:]
-    print(f"square: {a} piece: {board.piece_at(dict_squares[a])}")
+        else           -> white piece '''
+    move = str(move)[2:]
+    return board.piece_at(dict_squares[move])
+
+def random_move(board):
+    for x in board.legal_moves:
+        return x
+
 
 if __name__ == '__main__':
     # maybe make a general init()
     fill_squares_dict()
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
-
+    
+    board = chess.Board()
+    board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
 
     '''To get players move'''
     clicked_square = ()
     clicks = []
+
+    draw_board(screen, board)
+    pygame.display.flip()
 
     while 1:
         for e in pygame.event.get():
@@ -107,37 +189,46 @@ if __name__ == '__main__':
 
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:
-                    if len(board.move_stack) > 0:
+                    if len(board.move_stack) > 1:
                         board.pop()
-            
-            elif e.type == pygame.MOUSEBUTTONDOWN:
-                (x, y) = pygame.mouse.get_pos()
-                col = x // SQUARE_SIZE
-                row = y // SQUARE_SIZE
-                if clicked_square == (col, row):
-                    clicked_square = ()
-                    clicks = []
-                else:
-                    clicked_square = (col, row)
-                    clicks.append(clicked_square)
-            
-            if len(clicks) == 2:
-                # minimax()
-                move = get_move(clicks[0], clicks[1])
-                move = chess.Move.from_uci(move)
-                if move in board.legal_moves:
-                    get_piece(move)
-
-                    board.push(move)
-                    clicks = []
-                    clicked_square = []
-                elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                    '''Check if it is promotion time'''
-                    move = chess.Move.from_uci(str(move)+'q')
-                    board.push(move)
-                    clicks = []
-                    clicked_square = []
-                else:
-                    clicks = [clicked_square]
-        draw_board(screen)
-        pygame.display.flip()
+                        board.pop()
+            if board.turn:
+                # Player
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    (x, y) = pygame.mouse.get_pos()
+                    col = x // SQUARE_SIZE
+                    row = y // SQUARE_SIZE
+                    if clicked_square == (col, row):
+                        clicked_square = ()
+                        clicks = []
+                    else:
+                        clicked_square = (col, row)
+                        clicks.append(clicked_square)
+                
+                if len(clicks) == 2:
+                    move = get_move(clicks[0], clicks[1])
+                    move = chess.Move.from_uci(move)
+                    if move in board.legal_moves:
+                        board.push(move)
+                        clicks = []
+                        clicked_square = []
+                    elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
+                        '''Check if it is promotion time'''
+                        move = chess.Move.from_uci(str(move)+'q')
+                        board.push(move)
+                        clicks = []
+                        clicked_square = []
+                        draw_board(screen, board)
+                        pygame.display.flip()
+                    else:
+                        clicks = [clicked_square]
+                # draw_board(screen, board)
+                # pygame.display.flip()
+            else:
+                # Computer
+                print("Computers turn")
+                move = minimax_root(2, board)
+                move = chess.Move.from_uci(str(move))
+                board.push(move)
+            draw_board(screen, board)
+            pygame.display.flip()
