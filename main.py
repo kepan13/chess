@@ -82,8 +82,25 @@ def fill_squares_dict():
     for i in range(64):
         dict_squares[chess.SQUARE_NAMES[i]] = chess.SQUARES[i]
 
-
-pawn_eval_white = []
+'''
+rank 1
+rank 2
+rank 3
+...
+...
+rank 8
+'''
+# knight_eval = 
+# [
+# -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0,
+# -4.0, -2.0, -0.0, 0.5, 0.5, 0.5, 0.0, -2.0, -4.0,
+# -3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0,
+# -3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0,
+# -3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0,
+# -3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0,
+# -4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0,
+# -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0
+# ] # white right now, reverse for black
 
 def minimax_root(depth, board):
     # timer
@@ -258,7 +275,7 @@ if __name__ == '__main__':
                     board.push(computer_opening[idx_moves])
                     idx_moves += 1
                 else:
-                    # 3 == 4 depth
+                    # n == n + 1 depth
                     move = minimax_root(3, board)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
