@@ -289,6 +289,10 @@ if __name__ == '__main__':
     chosen_side = ''
     while chosen_side not in {'w', 'b'}:
         chosen_side = input("Which color u play? w / b: ")
+    
+    depth = 0
+    while depth <= 0 or depth > 4:
+        depth = int(input("Choose depth: 1-4 recommended"))
 
     while 1:
         for e in pygame.event.get():
@@ -344,7 +348,7 @@ if __name__ == '__main__':
                         idx_moves += 1
                     else:
                         # n == n + 1 depth
-                        move = minimax_root(3, board)
+                        move = minimax_root(depth, board)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
                     draw_board(screen, board)
@@ -361,7 +365,7 @@ if __name__ == '__main__':
                         idx_moves += 1
                     else:
                         # n == n + 1 depth
-                        move = minimax_root(3, board)
+                        move = minimax_root(depth, board)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
                     draw_board(screen, board)
