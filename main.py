@@ -2,7 +2,7 @@ import chess
 import pygame
 import os
 import random
-import time
+from datetime import datetime, time
 
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
@@ -31,6 +31,20 @@ dict_pieces = {'P': w_pawn, 'R': w_rook, 'N': w_knight, 'B': w_bishop, 'Q': w_qu
 '''Fill a dict with square names. key = chess.SQUARE_NAMES i.e. a1 a2... value = chess.SQUARES chess.A1 chess.A2...'''
 dict_squares = {}
 
+
+class Stopwatch(object):
+    def __init__(self):
+        self.start_time = None
+    
+    def start(self):
+        self.start_time = datetime.now()
+    @property
+    def value(self):
+        return (datetime.now() - self.start_time).total_seconds()
+    def peek(self):
+        return self.value
+    def finish(self):
+        return self.value
 
 '''Draws both squares and pieces'''
 def draw_board(screen, board):
@@ -72,20 +86,26 @@ def fill_squares_dict():
 pawn_eval_white = []
 
 def minimax_root(depth, board):
+    # timer
+    count = Stopwatch()
+    count.start()
+
     leg_moves = board.legal_moves
     final_move = None
     best_value = -9999
     for i_move in leg_moves:
         move = chess.Move.from_uci(str(i_move))
         board.push(move)
-        value = minimax(depth, board, -100, 100, False)
+        value = minimax(depth, board, -10000, 10000, False)
         board.pop()
-        print(value, move)
+        # print(value, move)
         if value > best_value:
             best_value = value
             final_move = move
             print(f"Value: {best_value}")
             print(f"Move: {final_move}")
+    time_elapsed = count.finish()
+    print(f"time spent: {time_elapsed}s")
     return final_move
 
 def minimax(depth,board, alpha, beta, is_max):
@@ -115,11 +135,13 @@ def minimax(depth,board, alpha, beta, is_max):
                 return value
         return value
 
+
+
+
 def evaluation(board):
     total = 0
     for i in range(64):
         total += getPieceValue(board.piece_at(i))
-    print(total)
     return total
 
 def getPieceValue(piece):
@@ -165,6 +187,9 @@ def random_move(board):
     for x in board.legal_moves:
         return x
 
+'''Opening for computer'''
+idx_moves = 0
+computer_opening = [chess.Move.from_uci("g8f6"), chess.Move.from_uci("g7g6"), chess.Move.from_uci("d7d6"), chess.Move.from_uci("f8g7"), chess.Move.from_uci("e8g8")]
 
 if __name__ == '__main__':
     # maybe make a general init()
@@ -173,7 +198,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     
     board = chess.Board()
-    board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
+    # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
 
     '''To get players move'''
     clicked_square = ()
@@ -226,9 +251,16 @@ if __name__ == '__main__':
                 # pygame.display.flip()
             else:
                 # Computer
+                print("--------------------------")
                 print("Computers turn")
-                move = minimax_root(2, board)
-                move = chess.Move.from_uci(str(move))
-                board.push(move)
+                print("--------------------------")
+                if idx_moves < 5:
+                    board.push(computer_opening[idx_moves])
+                    idx_moves += 1
+                else:
+                    # 3 == 4 depth
+                    move = minimax_root(3, board)
+                    move = chess.Move.from_uci(str(move))
+                    board.push(move)
             draw_board(screen, board)
             pygame.display.flip()
