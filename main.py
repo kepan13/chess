@@ -28,14 +28,11 @@ w_pawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wp' 
 
 dict_pieces = {'P': w_pawn, 'R': w_rook, 'N': w_knight, 'B': w_bishop, 'Q': w_queen, 'K': w_king, 'p': b_pawn, 'r': b_rook, 'n': b_knight, 'b': b_bishop, 'q': b_queen, 'k': b_king}
 
-'''Fill a dict with square names. key = chess.SQUARE_NAMES i.e. a1 a2... value = chess.SQUARES chess.A1 chess.A2...'''
-dict_squares = {}
 
 
 class Stopwatch(object):
     def __init__(self):
         self.start_time = None
-    
     def start(self):
         self.start_time = datetime.now()
     @property
@@ -77,30 +74,80 @@ def draw_board(screen, board):
             row += 1
             col = 0
 
+pawn_eval_white = [
+    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+    [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
+    [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
+    [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
+    [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
+    [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
+    [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
+    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+]
 
-def fill_squares_dict():
-    for i in range(64):
-        dict_squares[chess.SQUARE_NAMES[i]] = chess.SQUARES[i]
+pawn_eval_black = pawn_eval_white[::-1]
 
-'''
-rank 1
-rank 2
-rank 3
-...
-...
-rank 8
-'''
-# knight_eval = 
-# [
-# -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0,
-# -4.0, -2.0, -0.0, 0.5, 0.5, 0.5, 0.0, -2.0, -4.0,
-# -3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0,
-# -3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0,
-# -3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0,
-# -3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0,
-# -4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0,
-# -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0
-# ] # white right now, reverse for black
+knight_eval = [
+    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+    [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
+    [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
+    [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
+    [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
+    [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
+    [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+]
+
+bishop_eval_white = [
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
+    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
+    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
+    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
+    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+]
+
+bishop_eval_black = bishop_eval_white[::-1]
+
+rook_eval_white = [
+    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+]
+
+rook_eval_black = rook_eval_white[::-1]
+
+queen_eval = [
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+]
+
+king_eval_white = [
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
+    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+]
+
+king_eval_black = king_eval_white[::-1]
+
 
 def minimax_root(depth, board):
     # timer
@@ -152,35 +199,46 @@ def minimax(depth,board, alpha, beta, is_max):
                 return value
         return value
 
-
-
-
 def evaluation(board):
     total = 0
     for i in range(64):
-        total += getPieceValue(board.piece_at(i))
+        total += getPieceValue(board.piece_at(i), i, board)
     return total
 
-def getPieceValue(piece):
+def getPieceValue(piece, i, board):
+    '''
+        0 -> [7][0]
+        1 -> [7][1]
+        8 -> [6][0]
+        9 -> [6][1]
+        16 -> [5][0]
+
+        borde funka med
+        [7 - i // 8][i % 8]
+
+        24 -> [4][0] --> 7 - 24 // 8 == 4 24 % 8 = 0
+    '''
     piece = str(piece)
     if(piece == None):
         return 0
     multiplier = 1
     if piece.isupper():
         multiplier = -1
+    x = 7 - i // 8
+    y = i % 8
     value = 0
     if piece == "P" or piece == "p":
-        value = 10
+        value = 10 + pawn_eval_white[x][y] if board.turn else pawn_eval_black[x][y]
     elif piece == "N" or piece == "n":
-        value = 30
+        value = 30 + knight_eval[x][y]
     elif piece == "B" or piece == "b":
-        value = 30
+        value = 30 + bishop_eval_white[x][y] if board.turn else bishop_eval_black[x][y]
     elif piece == "R" or piece == "r":
-        value = 50
+        value = 50 + rook_eval_white[x][y] if board.turn else rook_eval_black[x][y]
     elif piece == "Q" or piece == "q":
-        value = 90
+        value = 90 + queen_eval[x][y]
     elif piece == 'K' or piece == 'k':
-        value = 900
+        value = 900 + king_eval_white[x][y] if board.turn else king_eval_black[x][y]
     return value * multiplier
 
 def get_move(start, end):
@@ -193,24 +251,16 @@ def get_move(start, end):
 
     return start_sq + end_sq
 
-def get_piece(board, move):
-    ''' returns piece taken kind of
-        capital letter -> black piece
-        else           -> white piece '''
-    move = str(move)[2:]
-    return board.piece_at(dict_squares[move])
-
 def random_move(board):
     for x in board.legal_moves:
         return x
 
 '''Opening for computer'''
 idx_moves = 0
-computer_opening = [chess.Move.from_uci("g8f6"), chess.Move.from_uci("g7g6"), chess.Move.from_uci("d7d6"), chess.Move.from_uci("f8g7"), chess.Move.from_uci("e8g8")]
+computer_opening = [chess.Move.from_uci("g8f6"), chess.Move.from_uci("g7g6"), chess.Move.from_uci("f8g7")]
 
 if __name__ == '__main__':
     # maybe make a general init()
-    fill_squares_dict()
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     
@@ -264,20 +314,21 @@ if __name__ == '__main__':
                         pygame.display.flip()
                     else:
                         clicks = [clicked_square]
-                # draw_board(screen, board)
-                # pygame.display.flip()
+                draw_board(screen, board)
+                pygame.display.flip()
+
+        if not board.turn:
+            # Computer
+            print("--------------------------")
+            print("Computers turn")
+            print("--------------------------")
+            if idx_moves < len(computer_opening):
+                board.push(computer_opening[idx_moves])
+                idx_moves += 1
             else:
-                # Computer
-                print("--------------------------")
-                print("Computers turn")
-                print("--------------------------")
-                if idx_moves < 5:
-                    board.push(computer_opening[idx_moves])
-                    idx_moves += 1
-                else:
-                    # n == n + 1 depth
-                    move = minimax_root(3, board)
-                    move = chess.Move.from_uci(str(move))
-                    board.push(move)
+                # n == n + 1 depth
+                move = minimax_root(3, board)
+                move = chess.Move.from_uci(str(move))
+                board.push(move)
             draw_board(screen, board)
             pygame.display.flip()
