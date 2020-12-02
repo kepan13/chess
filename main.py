@@ -3,6 +3,7 @@ import pygame
 import os
 import random
 from datetime import datetime, time
+import time
 
 current_path = os.path.dirname(__file__)
 image_path = os.path.join(current_path, 'pieces')
@@ -283,65 +284,150 @@ if __name__ == '__main__':
     clicked_square = ()
     clicks = []
 
+    game_over = False
+
     draw_board(screen, board)
     pygame.display.flip()
-
-    chosen_side = ''
-    while chosen_side not in {'w', 'b'}:
-        chosen_side = input("Which color u play? w / b: ")
     
-    depth = 0
-    while depth <= 0 or depth > 4:
-        depth = int(input("Choose depth: 1-4 recommended"))
+    menu_option = None
+    while menu_option not in {"1", "2"}:
+        menu_option = input("1. Player vs AI\n2. AI vs AI: ")
 
-    while 1:
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit()
+    depth = -1
+    while depth < 0 or depth > 4:
+        depth = int(input("Choose depth: 1-3 recommended: "))
 
-            elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_z:
-                    if len(board.move_stack) > 1:
-                        board.pop()
-                        board.pop()
-            if chosen_side == 'w':
-                g_Player = 'w'
+    if menu_option == "1":
+        # Player vs AI
+        chosen_side = ''
+        while chosen_side not in {'w', 'b'}:
+            chosen_side = input("Which color u play? w / b: ")
+
+        while not game_over:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit()
+                
+                elif e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_z:
+                        if len(board.move_stack) > 1:
+                            board.pop()
+                            board.pop()
+
+                if board.is_checkmate():
+                    print("Checkmate!")
+                    game_over = True
+                    break
+
+                if chosen_side == 'w':
+                    g_Player = 'w'
+                    if board.turn:
+                        # Player
+                        if e.type == pygame.MOUSEBUTTONDOWN:
+                            (x, y) = pygame.mouse.get_pos()
+                            col = x // SQUARE_SIZE
+                            row = y // SQUARE_SIZE
+                            if clicked_square == (col, row):
+                                clicked_square = ()
+                                clicks = []
+                            else:
+                                clicked_square = (col, row)
+                                clicks.append(clicked_square)
+                        
+                        if len(clicks) == 2:
+                            move = get_move(clicks[0], clicks[1])
+                            move = chess.Move.from_uci(move)
+                            if move in board.legal_moves:
+                                board.push(move)
+                                clicks = []
+                                clicked_square = []
+                            elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
+                                '''Check if it is promotion time'''
+                                move = chess.Move.from_uci(str(move)+'q')
+                                board.push(move)
+                                clicks = []
+                                clicked_square = []
+                                draw_board(screen, board)
+                                pygame.display.flip()
+                            else:
+                                clicks = [clicked_square]
+                        draw_board(screen, board)
+                        pygame.display.flip()
+                    else:
+                        # Computer
+                        print("--------------------------")
+                        print("Computers turn")
+                        print("--------------------------")
+                        if idx_moves < len(computer_opening):
+                            board.push(computer_opening[idx_moves])
+                            idx_moves += 1
+                        else:
+                            # n == n + 1 depth
+                            move = minimax_root(depth, board)
+                            move = chess.Move.from_uci(str(move))
+                            board.push(move)
+                        draw_board(screen, board)
+                        pygame.display.flip()
+                elif chosen_side == 'b':
+                    g_Player = 'b'
+                    if board.turn:
+                        # Computer
+                        print("--------------------------")
+                        print("Computers turn")
+                        print("--------------------------")
+                        if idx_moves < len(computer_opening):
+                            board.push(computer_opening[idx_moves])
+                            idx_moves += 1
+                        else:
+                            # n == n + 1 depth
+                            move = minimax_root(depth, board)
+                            move = chess.Move.from_uci(str(move))
+                            board.push(move)
+                        draw_board(screen, board)
+                        pygame.display.flip()
+                    else:
+                        # Player
+                        if e.type == pygame.MOUSEBUTTONDOWN:
+                            (x, y) = pygame.mouse.get_pos()
+                            col = x // SQUARE_SIZE
+                            row = y // SQUARE_SIZE
+                            if clicked_square == (col, row):
+                                clicked_square = ()
+                                clicks = []
+                            else:
+                                clicked_square = (col, row)
+                                clicks.append(clicked_square)
+                        
+                        if len(clicks) == 2:
+                            move = get_move(clicks[0], clicks[1])
+                            move = chess.Move.from_uci(move)
+                            if move in board.legal_moves:
+                                board.push(move)
+                                clicks = []
+                                clicked_square = []
+                            elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
+                                '''Check if it is promotion time'''
+                                move = chess.Move.from_uci(str(move)+'q')
+                                board.push(move)
+                                clicks = []
+                                clicked_square = []
+                                draw_board(screen, board)
+                                pygame.display.flip()
+                            else:
+                                clicks = [clicked_square]
+                        draw_board(screen, board)
+                        pygame.display.flip()
+    elif menu_option == "2":
+        # AI vs AI
+        while 1:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit()
                 if board.turn:
-                    # Player
-                    if e.type == pygame.MOUSEBUTTONDOWN:
-                        (x, y) = pygame.mouse.get_pos()
-                        col = x // SQUARE_SIZE
-                        row = y // SQUARE_SIZE
-                        if clicked_square == (col, row):
-                            clicked_square = ()
-                            clicks = []
-                        else:
-                            clicked_square = (col, row)
-                            clicks.append(clicked_square)
-                    
-                    if len(clicks) == 2:
-                        move = get_move(clicks[0], clicks[1])
-                        move = chess.Move.from_uci(move)
-                        if move in board.legal_moves:
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                            '''Check if it is promotion time'''
-                            move = chess.Move.from_uci(str(move)+'q')
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                            draw_board(screen, board)
-                            pygame.display.flip()
-                        else:
-                            clicks = [clicked_square]
-                    draw_board(screen, board)
-                    pygame.display.flip()
-                else:
                     # Computer
+                    g_Player = 'b'
                     print("--------------------------")
-                    print("Computers turn")
+                    print("White AI")
                     print("--------------------------")
                     if idx_moves < len(computer_opening):
                         board.push(computer_opening[idx_moves])
@@ -351,14 +437,14 @@ if __name__ == '__main__':
                         move = minimax_root(depth, board)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
-                    draw_board(screen, board)
-                    pygame.display.flip()
-            elif chosen_side == 'b':
-                g_Player = 'b'
-                if board.turn:
+                        time.sleep(1)
+                        draw_board(screen, board)
+                        pygame.display.flip()
+                else:
                     # Computer
+                    g_Player = 'w'
                     print("--------------------------")
-                    print("Computers turn")
+                    print("Black AI")
                     print("--------------------------")
                     if idx_moves < len(computer_opening):
                         board.push(computer_opening[idx_moves])
@@ -368,37 +454,6 @@ if __name__ == '__main__':
                         move = minimax_root(depth, board)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
-                    draw_board(screen, board)
-                    pygame.display.flip()
-                else:
-                    # Player
-                    if e.type == pygame.MOUSEBUTTONDOWN:
-                        (x, y) = pygame.mouse.get_pos()
-                        col = x // SQUARE_SIZE
-                        row = y // SQUARE_SIZE
-                        if clicked_square == (col, row):
-                            clicked_square = ()
-                            clicks = []
-                        else:
-                            clicked_square = (col, row)
-                            clicks.append(clicked_square)
-                    
-                    if len(clicks) == 2:
-                        move = get_move(clicks[0], clicks[1])
-                        move = chess.Move.from_uci(move)
-                        if move in board.legal_moves:
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                            '''Check if it is promotion time'''
-                            move = chess.Move.from_uci(str(move)+'q')
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                            draw_board(screen, board)
-                            pygame.display.flip()
-                        else:
-                            clicks = [clicked_square]
-                    draw_board(screen, board)
-                    pygame.display.flip()
+                        time.sleep(1)
+                        draw_board(screen, board)
+                        pygame.display.flip()
