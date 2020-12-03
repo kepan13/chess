@@ -152,25 +152,40 @@ king_eval_black = king_eval_white[::-1]
 # ADD TO ROOT
 if 3 repetetive moves: do second best move
 '''
-def minimax_root(depth, board):
+def minimax_root(depth, board, is_white):
     # timer
     count = Stopwatch()
     count.start()
 
     leg_moves = board.legal_moves
     final_move = None
-    best_value = -9999
-    for i_move in leg_moves:
-        move = chess.Move.from_uci(str(i_move))
-        board.push(move)
-        value = minimax(depth, board, -10000, 10000, False)
-        board.pop()
-        # print(value, move)
-        if value > best_value:
-            best_value = value
-            final_move = move
-            print(f"Value: {best_value}", end=" ")
-            print(f"Move: {final_move}")
+    best_value = 0
+    if is_white:
+        best_value = -9999
+        for i_move in leg_moves:
+            move = chess.Move.from_uci(str(i_move))
+            board.push(move)
+            value = minimax(depth, board, -10000, 10000, not is_white)
+            board.pop()
+            # print(value, move)
+            if value > best_value:
+                best_value = value
+                final_move = move
+                print(f"Value: {best_value}", end=" ")
+                print(f"Move: {final_move}")
+    else:
+        best_value = 9999
+        for i_move in leg_moves:
+            move = chess.Move.from_uci(str(i_move))
+            board.push(move)
+            value = minimax(depth, board, -10000, 10000, not is_white)
+            board.pop()
+            # print(value, move)
+            if value < best_value:
+                best_value = value
+                final_move = move
+                print(f"Value: {best_value}", end=" ")
+                print(f"Move: {final_move}")
     time_elapsed = count.finish()
     print(f"time spent: {time_elapsed}s")
     return final_move
@@ -267,7 +282,6 @@ def init():
 
 def player_vs_ai(screen, board):
 
-    global g_Player
     game_over = False
 
     '''To get players move'''
@@ -302,7 +316,6 @@ def player_vs_ai(screen, board):
                 break
 
             if chosen_side == 'w':
-                g_Player = 'w'
                 if board.turn:
                     # Player
                     if e.type == pygame.MOUSEBUTTONDOWN:
@@ -340,7 +353,7 @@ def player_vs_ai(screen, board):
                     print("--------------------------")
                     print("Computers turn")
                     print("--------------------------")
-                    move = minimax_root(depth, board)
+                    move = minimax_root(depth, board, False)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
                     draw_board(screen, board)
@@ -353,7 +366,7 @@ def player_vs_ai(screen, board):
                     print("Computers turn")
                     print("--------------------------")
                     # n == n + 1 depth
-                    move = minimax_root(depth, board)
+                    move = minimax_root(depth, board, True)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
                     draw_board(screen, board)
