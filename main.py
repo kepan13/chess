@@ -1,34 +1,22 @@
 import chess
 import pygame
-import os
+
 import random
 from datetime import datetime, time
 import time
 import sys
 
-current_path = os.path.dirname(__file__)
-image_path = os.path.join(current_path, 'pieces')
+import eval
+import pieces
+
 
 '''constants'''
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
-'''following code just loads and transforms the images to correct format'''
-b_rook = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bR' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-b_knight = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bN' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-b_bishop = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bB' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-b_queen = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bQ' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-b_king = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bK' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-b_pawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bp' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_rook = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wR' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_knight = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wN' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_bishop = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wB' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_queen = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wQ' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_king = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wK' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
-w_pawn = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'wp' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))
 
-dict_pieces = {'P': w_pawn, 'R': w_rook, 'N': w_knight, 'B': w_bishop, 'Q': w_queen, 'K': w_king, 'p': b_pawn, 'r': b_rook, 'n': b_knight, 'b': b_bishop, 'q': b_queen, 'k': b_king}
+dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
 
 class Stopwatch(object):
     def __init__(self):
@@ -43,79 +31,6 @@ class Stopwatch(object):
     def finish(self):
         return self.value
 
-pawn_eval_white = [
-    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-    [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
-    [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
-    [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
-    [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
-    [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
-    [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
-    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
-]
-
-pawn_eval_black = pawn_eval_white[::-1]
-
-knight_eval = [
-    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
-    [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
-    [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
-    [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
-    [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
-    [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
-    [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
-    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
-]
-
-bishop_eval_white = [
-    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
-    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
-    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
-    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
-    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
-    [ -2.0, -1.0, -3.0, -1.0, -1.0, -3.0, -1.0, -2.0]
-]
-
-bishop_eval_black = bishop_eval_white[::-1]
-
-rook_eval_white = [
-    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [  0.0, 0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
-]
-
-rook_eval_black = rook_eval_white[::-1]
-
-queen_eval = [
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
-]
-
-king_eval_white = [
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
-    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
-    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
-    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
-]
-
-king_eval_black = king_eval_white[::-1]
 
 '''
 # ADD TO ROOT
@@ -125,7 +40,8 @@ def minimax_root(depth, board, is_white):
     # timer
     count = Stopwatch()
     count.start()
-
+    third_best = None
+    second_best = None
     leg_moves = board.legal_moves
     final_move = None
     best_value = 0
@@ -138,6 +54,8 @@ def minimax_root(depth, board, is_white):
             board.pop()
             # print(value, move)
             if value > best_value:
+                third_best = second_best
+                second_best = best_value
                 best_value = value
                 final_move = move
                 print(f"Value: {best_value}", end=" ")
@@ -151,11 +69,15 @@ def minimax_root(depth, board, is_white):
             board.pop()
             # print(value, move)
             if value < best_value:
+                third_best = second_best
+                second_best = final_move
                 best_value = value
                 final_move = move
                 print(f"Value: {best_value}", end=" ")
                 print(f"Move: {final_move}")
     time_elapsed = count.finish()
+    print(f"1st: {final_move}\n2nd:\t{second_best}\n3rd:\t \t{third_best}")
+    print(f"Value: {best_value}", end=" ")
     print(f"time spent: {time_elapsed}s")
     return final_move
 
@@ -207,17 +129,17 @@ def getPieceValue(piece, i):
 
     value = 0
     if piece == "P" or piece == "p":
-        value = 10 + pawn_eval_white[row][col] if is_white else 10 + pawn_eval_black[row][col]
+        value = 10 + eval.pawn_white[row][col] if is_white else 10 + eval.pawn_black[row][col]
     elif piece == "N" or piece == "n":
-        value = 30 + knight_eval[row][col]
+        value = 30 + eval.knight[row][col]
     elif piece == "B" or piece == "b":
-        value = 30 + bishop_eval_white[row][col] if is_white else 30 + bishop_eval_black[row][col]
+        value = 30 + eval.bishop_white[row][col] if is_white else 30 + eval.bishop_black[row][col]
     elif piece == "R" or piece == "r":
-        value = 50 + rook_eval_white[row][col] if is_white else 50 + rook_eval_black[row][col]
+        value = 50 + eval.rook_white[row][col] if is_white else 50 + eval.rook_black[row][col]
     elif piece == "Q" or piece == "q":
-        value = 90 + queen_eval[row][col]
+        value = 90 + eval.queen[row][col]
     elif piece == 'K' or piece == 'k':
-        value = 900 + king_eval_white[row][col] if is_white else 900 + king_eval_black[row][col]
+        value = 900 + eval.king_white[row][col] if is_white else 900 + eval.king_black[row][col]
     # print(f"p: {piece}\t val: {value*multiplier}\t at square: {chess.SQUARE_NAMES[i]}")
     return value * multiplier
 
@@ -243,37 +165,10 @@ def update_screen(screen, board, *start_sq):
         draw_board(screen, board)
     pygame.display.flip()
 
-
-def highlight(screen, board, start_sq):
-    '''
-    If you click the square e2 -> e3 and e4 should be highlighted
-    e2 comes in as (6, 4)
-    '''
-    colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
-    green = (0, 255, 0)
-
-    highlighted_pieces = []
-    legal_moves = [str(legal_move) for legal_move in board.legal_moves]
-
-    selected_square = get_move(start_sq, (0,0))[:2]
-    for move in legal_moves:
-        if move[0:2] == selected_square:
-            highlighted_pieces.append(chess.SQUARE_NAMES.index(move[2:]))
-    
-    for square in chess.SQUARES:
-        row = 7 - square // 8
-        col = square % 8
-        color = colors[(row + col) % 2]
-        piece = str(board.piece_at(square))
-
-        if square in highlighted_pieces:
-            pygame.draw.rect(screen, green, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-        else:
-            pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-        if board.piece_at(square) is not None:
-            screen.blit(dict_pieces[piece], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
 def draw_board(screen, board, *start_sq):
+    '''
+    Draws board, highlights possible moves for clicked piece and highlights when checked.
+    '''
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     green =  pygame.Color('yellowgreen')
     red = pygame.Color('red4')
