@@ -43,37 +43,6 @@ class Stopwatch(object):
     def finish(self):
         return self.value
 
-'''Draws both squares and pieces'''
-def draw_board(screen, board):
-    a = board.fen()
-    colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
-    row = 0
-    col = 0
-    for i in a:
-        if i.isnumeric():
-            '''Blank squares'''
-            for j in range(int(i)):
-                color = colors[(row + col) % 2]
-                pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-                col += 1
-
-        elif i.isalpha():
-            '''
-            Letter in the FEN means piece on the board
-            first draw square, then draw piece
-            '''
-            color = colors[(row + col) % 2]
-            pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
-            screen.blit(dict_pieces[i], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-            col += 1
-
-        elif i == ' ': # stop parsing, end of FEN
-            return 0
-        else: # means we reached a '\' and need to go down a row
-            row += 1
-            col = 0
-
 pawn_eval_white = [
     [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
     [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
@@ -224,19 +193,6 @@ def evaluation(board):
     return total
 
 def getPieceValue(piece, i):
-    '''
-        0 -> [7][0]
-        1 -> [7][1]
-        8 -> [6][0]
-        9 -> [6][1]
-        16 -> [5][0]
-
-        borde funka med
-        [7 - i // 8][i % 8]
-
-        24 -> [4][0] --> 7 - 24 // 8 == 3, 24 % 8 = 0
-    '''
-
     if piece == None:
         return 0
     piece = str(piece)
@@ -280,6 +236,91 @@ def init():
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     return screen
 
+def update_screen(screen, board, *start_sq):
+    if start_sq:
+        draw_board(screen, board, start_sq)
+    else:
+        draw_board(screen, board)
+    pygame.display.flip()
+
+
+def highlight(screen, board, start_sq):
+    '''
+    If you click the square e2 -> e3 and e4 should be highlighted
+    e2 comes in as (6, 4)
+    '''
+    colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
+    green = (0, 255, 0)
+
+    highlighted_pieces = []
+    legal_moves = [str(legal_move) for legal_move in board.legal_moves]
+
+    selected_square = get_move(start_sq, (0,0))[:2]
+    for move in legal_moves:
+        if move[0:2] == selected_square:
+            highlighted_pieces.append(chess.SQUARE_NAMES.index(move[2:]))
+    
+    for square in chess.SQUARES:
+        row = 7 - square // 8
+        col = square % 8
+        color = colors[(row + col) % 2]
+        piece = str(board.piece_at(square))
+
+        if square in highlighted_pieces:
+            pygame.draw.rect(screen, green, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        else:
+            pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        if board.piece_at(square) is not None:
+            screen.blit(dict_pieces[piece], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+def draw_board(screen, board, *start_sq):
+    colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
+    green =  pygame.Color('yellowgreen')
+    red = pygame.Color('red4')
+    b_king_square = None
+    w_king_square = None
+    highlighted_pieces = []
+    legal_moves = [str(legal_move) for legal_move in board.legal_moves]
+    highight_size = SQUARE_SIZE - 10
+    
+    selected_square = None
+    if start_sq:
+        selected_square = get_move(start_sq[0][0], (0,0))[:2]
+    for move in legal_moves:
+        if move[0:2] == selected_square:
+            highlighted_pieces.append(chess.SQUARE_NAMES.index(move[2:]))
+
+    for square in chess.SQUARES:
+        row = 7 - square // 8
+        col = square % 8
+        color = colors[(row + col) % 2]
+        piece = str(board.piece_at(square))
+
+        if piece == 'k':
+            b_king_square = square
+        if piece == 'K':
+            w_king_square = square
+        if square in highlighted_pieces:
+            pygame.draw.rect(screen, green, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        else:
+            pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        if board.piece_at(square) is not None:
+            screen.blit(dict_pieces[piece], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    if board.is_check():
+        if board.turn:
+            # White king under attack!
+            row = 7 - w_king_square // 8
+            col = w_king_square % 8
+            pygame.draw.rect(screen, red, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            screen.blit(dict_pieces['K'], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        else:
+            # Black king under attack!
+            row = 7 - b_king_square // 8
+            col = b_king_square % 8
+            pygame.draw.rect(screen, red, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            screen.blit(dict_pieces['k'], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+
 def player_vs_ai(screen, board):
 
     game_over = False
@@ -289,7 +330,7 @@ def player_vs_ai(screen, board):
     clicks = []
 
     # Player vs AI
-    chosen_side = None
+    chosen_side = 'w'
     while chosen_side not in {'w', 'b'}:
         chosen_side = input("Which color u play? w / b: ")
 
@@ -303,6 +344,7 @@ def player_vs_ai(screen, board):
                     if len(board.move_stack) > 1:
                         board.pop()
                         board.pop()
+                update_screen(screen, board)
 
             if board.is_checkmate():
                 print("Checkmate!")
@@ -322,13 +364,16 @@ def player_vs_ai(screen, board):
                         (x, y) = pygame.mouse.get_pos()
                         col = x // SQUARE_SIZE
                         row = y // SQUARE_SIZE
+                        
                         if clicked_square == (col, row):
                             clicked_square = ()
                             clicks = []
                         else:
                             clicked_square = (col, row)
                             clicks.append(clicked_square)
-                    
+                            from_square = clicks[0]
+                            update_screen(screen, board, from_square)
+
                     if len(clicks) == 2:
                         move = get_move(clicks[0], clicks[1])
                         move = chess.Move.from_uci(move)
@@ -342,12 +387,9 @@ def player_vs_ai(screen, board):
                             board.push(move)
                             clicks = []
                             clicked_square = []
-                            draw_board(screen, board)
-                            pygame.display.flip()
                         else:
                             clicks = [clicked_square]
-                    draw_board(screen, board)
-                    pygame.display.flip()
+                        update_screen(screen, board)
                 else:
                     # Computer
                     print("--------------------------")
@@ -356,8 +398,7 @@ def player_vs_ai(screen, board):
                     move = minimax_root(depth, board, False)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
-                    draw_board(screen, board)
-                    pygame.display.flip()
+                    update_screen(screen, board)
             elif chosen_side == 'b':
                 g_Player = 'b'
                 if board.turn:
@@ -369,14 +410,16 @@ def player_vs_ai(screen, board):
                     move = minimax_root(depth, board, True)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
-                    draw_board(screen, board)
-                    pygame.display.flip()
+                    update_screen(screen, board)
                 else:
                     # Player
                     if e.type == pygame.MOUSEBUTTONDOWN:
                         (x, y) = pygame.mouse.get_pos()
                         col = x // SQUARE_SIZE
                         row = y // SQUARE_SIZE
+
+                        highlight((col, row))
+
                         if clicked_square == (col, row):
                             clicked_square = ()
                             clicks = []
@@ -397,14 +440,9 @@ def player_vs_ai(screen, board):
                             board.push(move)
                             clicks = []
                             clicked_square = []
-                            draw_board(screen, board)
-                            pygame.display.flip()
                         else:
                             clicks = [clicked_square]
-                    draw_board(screen, board)
-                    pygame.display.flip()
-
-g_Player = None
+                    update_screen(screen, board)
 
 if __name__ == '__main__':
 
@@ -414,15 +452,14 @@ if __name__ == '__main__':
     # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
 
     # blit to screen once
-    draw_board(screen, board)
-    pygame.display.flip()
+    update_screen(screen, board)
     
     # menu_option = None
     # while menu_option not in {"1", "2"}:
     #     menu_option = input("1. Player vs AI\n2. AI vs AI: ")
     menu_option = "1"
 
-    depth = 0
+    depth = 3
     while depth < 2 or depth > 4:
         depth = int(input("Choose depth: 2-4 recommended: "))
     depth -= 1
