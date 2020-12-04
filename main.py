@@ -243,14 +243,24 @@ def player_vs_ai(screen, board):
 
             if board.is_checkmate():
                 print("Checkmate!")
-                game_over = True
-                a = input("Press any key to exit...")
-                break
+                # game_over = True
+                a = input("'z': pop last move 'r': restart game:\n > ")
+                if a == 'z':
+                    board.pop()
+                    board.pop()
+                if a == 'r':
+                    board.reset()
+                # break
             if board.is_stalemate():
                 print("stalemate!")
-                game_over = True
-                a = input("Press any key to exit...")
-                break
+                # game_over = True
+                a = input("'z': pop last move 'r': restart game\n > ")
+                if a == 'z':
+                    board.pop()
+                    board.pop()
+                if a == 'r':
+                    board.reset()
+                # break
 
             if chosen_side == 'w':
                 if board.turn:
@@ -354,7 +364,7 @@ if __name__ == '__main__':
     #     menu_option = input("1. Player vs AI\n2. AI vs AI: ")
     menu_option = "1"
 
-    depth = 3
+    depth = 2
     while depth < 2 or depth > 4:
         depth = int(input("Choose depth: 2-4 recommended: "))
     depth -= 1
