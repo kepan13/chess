@@ -2,146 +2,33 @@ import chess
 import pygame
 
 import random
-from datetime import datetime, time
-import time
+# from datetime import datetime, time
 import sys
 
 import eval
 import pieces
+import ai
 
+'''
+TODO:
+    Null move pruning
+    Check positions pruned by alpha beta vs all positions
+    Add some things to eval, like bishops pair, passed pawns
+
+    FOR ENDGAME:
+        if piece_count < 7 ---> go to 7 depth or deeper... TRY THIS
+'''
 
 '''constants'''
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
+DEPTH = 4
+PLAYER = 'w'
 
 dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
 
-class Stopwatch(object):
-    def __init__(self):
-        self.start_time = None
-    def start(self):
-        self.start_time = datetime.now()
-    @property
-    def value(self):
-        return (datetime.now() - self.start_time).total_seconds()
-    def peek(self):
-        return self.value
-    def finish(self):
-        return self.value
-
-
-'''
-# ADD TO ROOT
-if 3 repetetive moves: do second best move
-'''
-def minimax_root(depth, board, is_white):
-    # timer
-    count = Stopwatch()
-    count.start()
-    third_best = None
-    second_best = None
-    leg_moves = board.legal_moves
-    final_move = None
-    best_value = 0
-    if is_white:
-        best_value = -9999
-        for i_move in leg_moves:
-            move = chess.Move.from_uci(str(i_move))
-            board.push(move)
-            value = minimax(depth, board, -10000, 10000, not is_white)
-            board.pop()
-            # print(value, move)
-            if value > best_value:
-                third_best = second_best
-                second_best = best_value
-                best_value = value
-                final_move = move
-                print(f"Value: {best_value}", end=" ")
-                print(f"Move: {final_move}")
-    else:
-        best_value = 9999
-        for i_move in leg_moves:
-            move = chess.Move.from_uci(str(i_move))
-            board.push(move)
-            value = minimax(depth, board, -10000, 10000, not is_white)
-            board.pop()
-            # print(value, move)
-            if value < best_value:
-                third_best = second_best
-                second_best = final_move
-                best_value = value
-                final_move = move
-                print(f"Value: {best_value}", end=" ")
-                print(f"Move: {final_move}")
-    time_elapsed = count.finish()
-    print(f"1st: {final_move}\n2nd:\t{second_best}\n3rd:\t \t{third_best}")
-    print(f"Value: {best_value}", end=" ")
-    print(f"time spent: {time_elapsed}s")
-    return final_move
-
-def minimax(depth,board, alpha, beta, is_max):
-    if depth == 0:
-        return evaluation(board)
-    leg_moves = board.legal_moves
-    if is_max:
-        value = -9999
-        for i_move in leg_moves:
-            move = chess.Move.from_uci(str(i_move))
-            board.push(move)
-            value = max(value, minimax(depth - 1, board, alpha, beta, False))
-            board.pop()
-            alpha = max(alpha, value)
-            if beta <= alpha:
-                return value
-        return value
-    else:
-        value = 9999
-        for i_move in leg_moves:
-            move = chess.Move.from_uci(str(i_move))
-            board.push(move)
-            value = min(value, minimax(depth - 1, board, alpha, beta, True))
-            board.pop()
-            beta = min(beta, value)
-            if(beta <= alpha):
-                return value
-        return value
-
-def evaluation(board):
-    total = 0
-    for i in range(64):
-        total += getPieceValue(board.piece_at(i), i)
-    return total
-
-def getPieceValue(piece, i):
-    if piece == None:
-        return 0
-    piece = str(piece)
-
-    is_white = piece.isupper()
-
-    multiplier = 1 if is_white else -1
-
-    row = 7 - i // 8
-    col = i % 8
-    # assert row and col are the correct size?
-
-    value = 0
-    if piece == "P" or piece == "p":
-        value = 10 + eval.pawn_white[row][col] if is_white else 10 + eval.pawn_black[row][col]
-    elif piece == "N" or piece == "n":
-        value = 30 + eval.knight[row][col]
-    elif piece == "B" or piece == "b":
-        value = 30 + eval.bishop_white[row][col] if is_white else 30 + eval.bishop_black[row][col]
-    elif piece == "R" or piece == "r":
-        value = 50 + eval.rook_white[row][col] if is_white else 50 + eval.rook_black[row][col]
-    elif piece == "Q" or piece == "q":
-        value = 90 + eval.queen[row][col]
-    elif piece == 'K' or piece == 'k':
-        value = 900 + eval.king_white[row][col] if is_white else 900 + eval.king_black[row][col]
-    # print(f"p: {piece}\t val: {value*multiplier}\t at square: {chess.SQUARE_NAMES[i]}")
-    return value * multiplier
 
 def get_move(start, end):
     '''converts col row to chess notation i.e. 0,6 -> 0,5 becomes a2a3'''
@@ -183,7 +70,7 @@ def draw_board(screen, board, *start_sq):
         selected_square = get_move(start_sq[0][0], (0,0))[:2]
     for move in legal_moves:
         if move[0:2] == selected_square:
-            highlighted_pieces.append(chess.SQUARE_NAMES.index(move[2:]))
+            highlighted_pieces.append(chess.SQUARE_NAMES.index(move[2:4]))
 
     for square in chess.SQUARES:
         row = 7 - square // 8
@@ -215,6 +102,7 @@ def draw_board(screen, board, *start_sq):
             pygame.draw.rect(screen, red, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             screen.blit(dict_pieces['k'], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
+opening = [chess.Move.from_uci("d2d4")]
 
 def player_vs_ai(screen, board):
 
@@ -225,7 +113,7 @@ def player_vs_ai(screen, board):
     clicks = []
 
     # Player vs AI
-    chosen_side = 'w'
+    chosen_side = PLAYER
     while chosen_side not in {'w', 'b'}:
         chosen_side = input("Which color u play? w / b: ")
 
@@ -300,38 +188,27 @@ def player_vs_ai(screen, board):
                     print("--------------------------")
                     print("Computers turn")
                     print("--------------------------")
-                    move = minimax_root(depth, board, False)
+                    move = ai.minimax_root(depth, board, False)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
                     update_screen(screen, board)
             elif chosen_side == 'b':
-                g_Player = 'b'
-                if board.turn:
-                    # Computer
-                    print("--------------------------")
-                    print("Computers turn")
-                    print("--------------------------")
-                    # n == n + 1 depth
-                    move = minimax_root(depth, board, True)
-                    move = chess.Move.from_uci(str(move))
-                    board.push(move)
-                    update_screen(screen, board)
-                else:
+                if not board.turn:
                     # Player
                     if e.type == pygame.MOUSEBUTTONDOWN:
                         (x, y) = pygame.mouse.get_pos()
                         col = x // SQUARE_SIZE
                         row = y // SQUARE_SIZE
-
-                        highlight((col, row))
-
+                        
                         if clicked_square == (col, row):
                             clicked_square = ()
                             clicks = []
                         else:
                             clicked_square = (col, row)
                             clicks.append(clicked_square)
-                    
+                            from_square = clicks[0]
+                            update_screen(screen, board, from_square)
+
                     if len(clicks) == 2:
                         move = get_move(clicks[0], clicks[1])
                         move = chess.Move.from_uci(move)
@@ -347,6 +224,19 @@ def player_vs_ai(screen, board):
                             clicked_square = []
                         else:
                             clicks = [clicked_square]
+                        update_screen(screen, board)
+                else:
+                    # Computer
+                    print("--------------------------")
+                    print("Computers turn")
+                    print("--------------------------")
+                    if (len(opening)):
+                        board.push(opening[0])
+                        opening.pop()
+                    else:
+                        move = ai.minimax_root(depth, board, True)
+                        move = chess.Move.from_uci(str(move))
+                        board.push(move)
                     update_screen(screen, board)
 
 if __name__ == '__main__':
@@ -355,6 +245,8 @@ if __name__ == '__main__':
 
     board = chess.Board()
     # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
+    # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28")
+    # board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28")
 
     # blit to screen once
     update_screen(screen, board)
@@ -364,9 +256,9 @@ if __name__ == '__main__':
     #     menu_option = input("1. Player vs AI\n2. AI vs AI: ")
     menu_option = "1"
 
-    depth = 2
-    while depth < 2 or depth > 4:
-        depth = int(input("Choose depth: 2-4 recommended: "))
+    depth = DEPTH
+    # while depth < 2 or depth > 4:
+    #     depth = int(input("Choose depth: 2-4 recommended: "))
     depth -= 1
 
     if menu_option == "1":

@@ -10,7 +10,7 @@ pawn_white = [
     [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
 ]
 
-pawn_black = pawn_white[::-1]
+pawn_black = [k[::-1] for k in pawn_white[::-1]]
 
 knight = [
     [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
@@ -34,7 +34,7 @@ bishop_white = [
     [ -2.0, -1.0, -3.0, -1.0, -1.0, -3.0, -1.0, -2.0]
 ]
 
-bishop_black = bishop_white[::-1]
+bishop_black = [k[::-1] for k in bishop_white[::-1]]
 
 rook_white = [
     [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
@@ -47,7 +47,7 @@ rook_white = [
     [  0.0, 0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
 ]
 
-rook_black = rook_white[::-1]
+rook_black = [k[::-1] for k in rook_white[::-1]]
 
 queen = [
     [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
@@ -71,4 +71,4 @@ king_white = [
     [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
 ]
 
-king_black = king_white[::-1]
+king_black = [k[::-1] for k in king_white[::-1]]
