@@ -516,7 +516,7 @@ if __name__ == '__main__':
       nodes = 0
       no_pruning_nodes = 0
       no_cache_nodes = 0
-      move = minimax_root(5, board)
+      move = minimax_root(4, board)
       print(nodes)
       print(no_pruning_nodes)
       print(no_caching_nodes)

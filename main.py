@@ -142,12 +142,15 @@ def player_vs_ai(screen, board):
             if board.is_stalemate():
                 print("stalemate!")
                 # game_over = True
-                a = input("'z': pop last move 'r': restart game\n > ")
+                a = input("'z': pop last move 'r': restart game 'q': quit\n > ")
                 if a == 'z':
                     board.pop()
                     board.pop()
                 if a == 'r':
                     board.reset()
+                if a == 'q':
+                    game_over = True
+                    break
                 # break
 
             if chosen_side == 'w':
@@ -186,9 +189,8 @@ def player_vs_ai(screen, board):
                 else:
                     # Computer
                     print("--------------------------")
-                    print("Computers turn")
-                    print("--------------------------")
-                    move = ai.minimax_root(depth, board, False)
+                    # move = ai.minimax_root(depth, board, False)
+                    move = ai.minimax_root(depth, board)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
                     update_screen(screen, board)
@@ -228,13 +230,12 @@ def player_vs_ai(screen, board):
                 else:
                     # Computer
                     print("--------------------------")
-                    print("Computers turn")
-                    print("--------------------------")
                     if (len(opening)):
                         board.push(opening[0])
                         opening.pop()
                     else:
-                        move = ai.minimax_root(depth, board, True)
+                        # move = ai.minimax_root(depth, board, True)
+                        move = ai.minimax_root(depth, board)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
                     update_screen(screen, board)
@@ -245,8 +246,10 @@ if __name__ == '__main__':
 
     board = chess.Board()
     # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
-    # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28")
-    # board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28")
+    # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28") # vs axel
+    # board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28") # end game
+    # board.set_fen("1r1qkb1r/p1p2ppp/2p5/3ppb2/n2P1B2/QP6/P1PNPPPP/R3KB1R w KQk e6 0 11")
+    board.set_fen("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     # blit to screen once
     update_screen(screen, board)
@@ -259,7 +262,7 @@ if __name__ == '__main__':
     depth = DEPTH
     # while depth < 2 or depth > 4:
     #     depth = int(input("Choose depth: 2-4 recommended: "))
-    depth -= 1
+    # depth -= 1
 
     if menu_option == "1":
         player_vs_ai(screen, board)
