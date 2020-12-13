@@ -24,7 +24,7 @@ WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
-DEPTH = 4
+DEPTH = 3
 PLAYER = 'w'
 
 dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     board = chess.Board()
     # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
     # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28") # vs axel
-    # board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28") # end game
+    board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28") # end game
     # board.set_fen("1r1qkb1r/p1p2ppp/2p5/3ppb2/n2P1B2/QP6/P1PNPPPP/R3KB1R w KQk e6 0 11")
     # board.set_fen("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 

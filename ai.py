@@ -63,7 +63,12 @@ def minimax_root(depth, board, is_white):
     print(f"time spent: {time_elapsed}s")
 
     # to check if draw
-    board.push(final_move)
+    if final_move is not None:
+        board.push(final_move)
+    else:
+        for move in leg_moves:
+            return move
+        
     if board.can_claim_threefold_repetition() and second_best is not None:
         print("======================")
         print("     INGEN REMI")
