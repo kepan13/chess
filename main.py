@@ -189,8 +189,7 @@ def player_vs_ai(screen, board):
                 else:
                     # Computer
                     print("--------------------------")
-                    # move = ai.minimax_root(depth, board, False)
-                    move = ai.minimax_root(depth, board)
+                    move = ai.minimax_root(depth, board, False)
                     move = chess.Move.from_uci(str(move))
                     board.push(move)
                     update_screen(screen, board)
@@ -234,8 +233,7 @@ def player_vs_ai(screen, board):
                         board.push(opening[0])
                         opening.pop()
                     else:
-                        # move = ai.minimax_root(depth, board, True)
-                        move = ai.minimax_root(depth, board)
+                        move = ai.minimax_root(depth, board, True)
                         move = chess.Move.from_uci(str(move))
                         board.push(move)
                     update_screen(screen, board)
@@ -249,7 +247,7 @@ if __name__ == '__main__':
     # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28") # vs axel
     # board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28") # end game
     # board.set_fen("1r1qkb1r/p1p2ppp/2p5/3ppb2/n2P1B2/QP6/P1PNPPPP/R3KB1R w KQk e6 0 11")
-    board.set_fen("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    # board.set_fen("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     # blit to screen once
     update_screen(screen, board)
