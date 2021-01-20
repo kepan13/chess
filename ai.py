@@ -31,7 +31,7 @@ def minimax_root(depth, board, is_white):
     leg_moves = board.legal_moves
     final_move = None
     best_value = 0
-
+    
     depth -= 1 # currently working like this --> depth n = n - 1
     if is_white:
         best_value = -9999
@@ -62,17 +62,14 @@ def minimax_root(depth, board, is_white):
     print(f"1st:{final_move}\n2nd:\t{second_best}\n3rd:\t\t{third_best}")
     print(f"time spent: {time_elapsed}s")
 
-    # to check if draw
     if final_move is not None:
         board.push(final_move)
     else:
         for move in leg_moves:
             return move
         
-    if board.can_claim_threefold_repetition() and second_best is not None:
-        print("======================")
-        print("     INGEN REMI")
-        print("======================")
+    if board.is_repetition(2) and second_best is not None:
+        print("Made 2nd best move due to repetition")
         board.pop()
         return second_best
     board.pop()
@@ -82,9 +79,8 @@ def minimax(depth, board, alpha, beta, is_max):
     global nodes
 
     if depth == 0:
+        nodes += 1
         return evaluation(board)
-
-    nodes += 1
 
     leg_moves = board.legal_moves
     if is_max:

@@ -1,20 +1,22 @@
-pawn_white = [
-    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-    [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
-    [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
-    [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
-    [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
-    [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
-    [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
-    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
-]
+import chess
+import time
 
-# pawn_black = [k[::-1] for k in pawn_white[::-1]]
-pawn_black = pawn_white[::-1]
+nodes = 0
 
-for i in pawn_white:
-    print(i)
-print("=============================")
+def perft_driver(depth : int) -> None:
+    global nodes
 
-for i in pawn_black:
-    print(i)
+    if depth == 0:
+        nodes += 1
+        return
+    for move in b.legal_moves:
+        b.push(move)
+        perft_driver(depth - 1)
+        b.pop()
+
+b = chess.Board()
+start = time.perf_counter()
+perft_driver(4)
+end = time.perf_counter()
+print(f"time: {end - start}s")
+print(nodes)

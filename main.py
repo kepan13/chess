@@ -58,6 +58,7 @@ def draw_board(screen, board, *start_sq):
     '''
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     green =  pygame.Color('yellowgreen')
+    red = (255,0,0)
     red = pygame.Color('red4')
     b_king_square = None
     w_king_square = None
@@ -112,11 +113,8 @@ def player_vs_ai(screen, board):
     clicked_square = ()
     clicks = []
 
-    # Player vs AI
-    chosen_side = PLAYER
-    while chosen_side not in {'w', 'b'}:
-        chosen_side = input("Which color u play? w / b: ")
-
+    depth = DEPTH
+    
     while not game_over:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -151,156 +149,55 @@ def player_vs_ai(screen, board):
                 if a == 'q':
                     game_over = True
                     break
-                # break
 
-            if chosen_side == 'w':
-                if board.turn:
-                    # Player
-                    if e.type == pygame.MOUSEBUTTONDOWN:
-                        (x, y) = pygame.mouse.get_pos()
-                        col = x // SQUARE_SIZE
-                        row = y // SQUARE_SIZE
-                        
-                        if clicked_square == (col, row):
-                            clicked_square = ()
-                            clicks = []
-                        else:
-                            clicked_square = (col, row)
-                            clicks.append(clicked_square)
-                            from_square = clicks[0]
-                            update_screen(screen, board, from_square)
-
-                    if len(clicks) == 2:
-                        move = get_move(clicks[0], clicks[1])
-                        move = chess.Move.from_uci(move)
-                        if move in board.legal_moves:
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                            '''Check if it is promotion time'''
-                            move = chess.Move.from_uci(str(move)+'q')
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        else:
-                            clicks = [clicked_square]
-                        update_screen(screen, board)
-                else:
-                    # Computer
-                    print("--------------------------")
-                    move = ai.minimax_root(depth, board, False)
-                    move = chess.Move.from_uci(str(move))
-                    board.push(move)
-                    update_screen(screen, board)
-            elif chosen_side == 'b':
-                if not board.turn:
-                    # Player
-                    if e.type == pygame.MOUSEBUTTONDOWN:
-                        (x, y) = pygame.mouse.get_pos()
-                        col = x // SQUARE_SIZE
-                        row = y // SQUARE_SIZE
-                        
-                        if clicked_square == (col, row):
-                            clicked_square = ()
-                            clicks = []
-                        else:
-                            clicked_square = (col, row)
-                            clicks.append(clicked_square)
-                            from_square = clicks[0]
-                            update_screen(screen, board, from_square)
-
-                    if len(clicks) == 2:
-                        move = get_move(clicks[0], clicks[1])
-                        move = chess.Move.from_uci(move)
-                        if move in board.legal_moves:
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
-                            '''Check if it is promotion time'''
-                            move = chess.Move.from_uci(str(move)+'q')
-                            board.push(move)
-                            clicks = []
-                            clicked_square = []
-                        else:
-                            clicks = [clicked_square]
-                        update_screen(screen, board)
-                else:
-                    # Computer
-                    print("--------------------------")
-                    if (len(opening)):
-                        board.push(opening[0])
-                        opening.pop()
+            if board.turn:
+                # Player
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    (x, y) = pygame.mouse.get_pos()
+                    col = x // SQUARE_SIZE
+                    row = y // SQUARE_SIZE
+                    
+                    if clicked_square == (col, row):
+                        clicked_square = ()
+                        clicks = []
                     else:
-                        move = ai.minimax_root(depth, board, True)
-                        move = chess.Move.from_uci(str(move))
+                        clicked_square = (col, row)
+                        clicks.append(clicked_square)
+                        from_square = clicks[0]
+                        update_screen(screen, board, from_square)
+
+                if len(clicks) == 2:
+                    move = get_move(clicks[0], clicks[1])
+                    move = chess.Move.from_uci(move)
+                    if move in board.legal_moves:
                         board.push(move)
+                        clicks = []
+                        clicked_square = []
+                    elif chess.Move.from_uci(str(move)+'q') in board.legal_moves:
+                        '''Check if it is promotion time'''
+                        move = chess.Move.from_uci(str(move)+'q')
+                        board.push(move)
+                        clicks = []
+                        clicked_square = []
+                    else:
+                        clicks = [clicked_square]
                     update_screen(screen, board)
+            else:
+                # Computer
+                print("--------------------------")
+                move = ai.minimax_root(depth, board, False)
+                move = chess.Move.from_uci(str(move))
+                board.push(move)
+                update_screen(screen, board)
+
 
 if __name__ == '__main__':
 
     screen = init()
 
     board = chess.Board()
-    # board.set_fen("r1bqkb1r/ppp2ppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5")
-    # board.set_fen("rr4k1/1pp2p1p/p5b1/3p4/1R1Pn1p1/P3P3/5PPP/4R1K1 w - - 0 28") # vs axel
-    board.set_fen("1k6/ppp3pp/8/8/8/8/PPP3PP/1K6 w - - 0 28") # end game
-    # board.set_fen("1r1qkb1r/p1p2ppp/2p5/3ppb2/n2P1B2/QP6/P1PNPPPP/R3KB1R w KQk e6 0 11")
-    # board.set_fen("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     # blit to screen once
     update_screen(screen, board)
-    
-    # menu_option = None
-    # while menu_option not in {"1", "2"}:
-    #     menu_option = input("1. Player vs AI\n2. AI vs AI: ")
-    menu_option = "1"
 
-    depth = DEPTH
-    # while depth < 2 or depth > 4:
-    #     depth = int(input("Choose depth: 2-4 recommended: "))
-    # depth -= 1
-
-    if menu_option == "1":
-        player_vs_ai(screen, board)
-    elif menu_option == "2":
-        # AI vs AI
-        while 1:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    pygame.quit()
-                if board.turn:
-                    # Computer
-                    g_Player = 'b'
-                    print("--------------------------")
-                    print("White AI")
-                    print("--------------------------")
-                    if idx_moves < len(computer_opening):
-                        board.push(computer_opening[idx_moves])
-                        idx_moves += 1
-                    else:
-                        # n == n + 1 depth
-                        move = minimax_root(depth, board)
-                        move = chess.Move.from_uci(str(move))
-                        board.push(move)
-                        time.sleep(1)
-                        draw_board(screen, board)
-                        pygame.display.flip()
-                else:
-                    # Computer
-                    g_Player = 'w'
-                    print("--------------------------")
-                    print("Black AI")
-                    print("--------------------------")
-                    if idx_moves < len(computer_opening):
-                        board.push(computer_opening[idx_moves])
-                        idx_moves += 1
-                    else:
-                        # n == n + 1 depth
-                        move = minimax_root(depth, board)
-                        move = chess.Move.from_uci(str(move))
-                        board.push(move)
-                        time.sleep(1)
-                        draw_board(screen, board)
-                        pygame.display.flip()
+    player_vs_ai(screen, board)
