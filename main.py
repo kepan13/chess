@@ -25,7 +25,6 @@ DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
 DEPTH = 3
-PLAYER = 'w'
 
 dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
 
@@ -105,6 +104,18 @@ def draw_board(screen, board, *start_sq):
 
 opening = [chess.Move.from_uci("d2d4")]
 
+def game_over_menu(board):
+    print("GAME OVER!")
+    # game_over = True
+    a = input("'z': pop last move 'r': restart game 'q': quit\n > ")
+    if a == 'z':
+        board.pop()
+        board.pop()
+    if a == 'r':
+        board.reset()
+    if a == 'q':
+        sys.exit(1)
+
 def player_vs_ai(screen, board):
 
     game_over = False
@@ -114,7 +125,7 @@ def player_vs_ai(screen, board):
     clicks = []
 
     depth = DEPTH
-    
+
     while not game_over:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -128,28 +139,9 @@ def player_vs_ai(screen, board):
                 update_screen(screen, board)
 
             if board.is_checkmate():
-                print("Checkmate!")
-                # game_over = True
-                a = input("'z': pop last move 'r': restart game:\n > ")
-                if a == 'z':
-                    board.pop()
-                    board.pop()
-                if a == 'r':
-                    board.reset()
-                # break
+                game_over_menu(board)
             if board.is_stalemate():
-                print("stalemate!")
-                # game_over = True
-                a = input("'z': pop last move 'r': restart game 'q': quit\n > ")
-                if a == 'z':
-                    board.pop()
-                    board.pop()
-                if a == 'r':
-                    board.reset()
-                if a == 'q':
-                    game_over = True
-                    break
-
+                game_over_menu(board)
             if board.turn:
                 # Player
                 if e.type == pygame.MOUSEBUTTONDOWN:
@@ -200,4 +192,5 @@ if __name__ == '__main__':
     # blit to screen once
     update_screen(screen, board)
 
+    # game loop
     player_vs_ai(screen, board)

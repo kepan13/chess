@@ -19,20 +19,23 @@ class Stopwatch(object):
 
 nodes = 0
 
-def minimax_root(depth, board, is_white):
-    # timer
+def minimax_root(depth : int, board : chess.Board, is_white : bool) -> None:
     global nodes
 
-    nodes = 0
+    # timer
     count = Stopwatch()
     count.start()
+
+    nodes = 0
     third_best = None
     second_best = None
     leg_moves = board.legal_moves
     final_move = None
     best_value = 0
     
-    depth -= 1 # currently working like this --> depth n = n - 1
+    # the root is of depth 1
+    depth -= 1
+
     if is_white:
         best_value = -9999
         for i_move in leg_moves:
@@ -58,8 +61,8 @@ def minimax_root(depth, board, is_white):
                 second_best = final_move
                 final_move = move
     time_elapsed = count.finish()
-    print("nodes: ",nodes)
-    print(f"1st:{final_move}\n2nd:\t{second_best}\n3rd:\t\t{third_best}")
+    print(f"nodes: {nodes}    value: {best_value}")
+    print(f"best move: {final_move}")
     print(f"time spent: {time_elapsed}s")
 
     if final_move is not None:
@@ -75,7 +78,7 @@ def minimax_root(depth, board, is_white):
     board.pop()
     return final_move
 
-def minimax(depth, board, alpha, beta, is_max):
+def minimax(depth : int, board : chess.Board, alpha : int, beta : int, is_max : bool) -> int:
     global nodes
 
     if depth == 0:
