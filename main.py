@@ -57,6 +57,7 @@ def draw_board(screen, board, *start_sq):
     '''
     colors = [pygame.Color('navajowhite1'), pygame.Color('peru')]
     green =  pygame.Color('yellowgreen')
+    blue = pygame.Color('blue')
     red = (255,0,0)
     red = pygame.Color('red4')
     b_king_square = None
@@ -83,7 +84,7 @@ def draw_board(screen, board, *start_sq):
         if piece == 'K':
             w_king_square = square
         if square in highlighted_pieces:
-            pygame.draw.rect(screen, green, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            pygame.draw.rect(screen, green, (col*SQUARE_SIZE + 20, row*SQUARE_SIZE + 20, SQUARE_SIZE - 40, SQUARE_SIZE - 40))
         else:
             pygame.draw.rect(screen, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         if board.piece_at(square) is not None:
