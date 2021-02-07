@@ -2,13 +2,14 @@
 Creating a chess gui and AI
 # Dependencies
 ## Pygame
+```
+pip install pygame
+```
 ## python-chess
 ```
 pip install python-chess
 ```
-```
-pip install pygame
-```
+
 # Installation
 ```
 git clone https://github.com/oscarm3l1n/chess.git
