@@ -8,23 +8,14 @@ import sys
 import eval
 import pieces
 import ai
-
-'''
-TODO:
-    Null move pruning
-    Check positions pruned by alpha beta vs all positions
-    Add some things to eval, like bishops pair, passed pawns
-
-    FOR ENDGAME:
-        if piece_count < 7 ---> go to 7 depth or deeper... TRY THIS
-'''
+import ai2
 
 '''constants'''
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
-DEPTH = 3
+DEPTH = 4
 
 dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
 
@@ -178,8 +169,10 @@ def player_vs_ai(screen, board):
             else:
                 # Computer
                 print("--------------------------")
-                move = ai.minimax_root(depth, board, False)
-                move = chess.Move.from_uci(str(move))
+                # move = ai.minimax_root(depth, board, False)
+                # # move = chess.Move.from_uci(str(move))
+                # board.push(move)
+                move = ai2.find_move(board, DEPTH)
                 board.push(move)
                 update_screen(screen, board)
 
@@ -195,3 +188,7 @@ if __name__ == '__main__':
 
     # game loop
     player_vs_ai(screen, board)
+    # while 1:
+    #     m = ai2.find_move(board, DEPTH)
+    #     board.push(m)
+    #     update_screen(screen, board)
