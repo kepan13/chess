@@ -1,5 +1,17 @@
 # chess
 Creating a chess gui and AI
+# 2 modes available
+```
+main.py
+```
+is the older version where you make a move by clicking 2 times. First the square to move from, and where you want to go
+
+```
+click_and_drag.py
+```
+Is click and drag gui. You can also see the Ranks and Files in this mode
+### Both modes uses the same ai, ai2
+
 # Dependencies
 ## Pygame
 ```
