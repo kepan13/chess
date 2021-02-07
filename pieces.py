@@ -7,6 +7,7 @@ image_path = os.path.join(current_path, 'pieces')
 WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
+# SQUARE_SIZE = 80
 
 '''following code just loads and transforms the images to correct format'''
 b_rook = pygame.transform.scale(pygame.image.load(os.path.join(image_path, 'bR' + '.png')), (SQUARE_SIZE, SQUARE_SIZE))

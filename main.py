@@ -2,7 +2,6 @@ import chess
 import pygame
 
 import random
-# from datetime import datetime, time
 import sys
 
 import eval
@@ -15,7 +14,7 @@ WIDTH = HEIGHT = 800
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
-DEPTH = 4
+DEPTH = 3
 
 dict_pieces = {'P': pieces.w_pawn, 'R': pieces.w_rook, 'N': pieces.w_knight, 'B': pieces.w_bishop, 'Q': pieces.w_queen, 'K': pieces.w_king, 'p': pieces.b_pawn, 'r': pieces.b_rook, 'n': pieces.b_knight, 'b': pieces.b_bishop, 'q': pieces.b_queen, 'k': pieces.b_king}
 
@@ -168,7 +167,6 @@ def player_vs_ai(screen, board):
                     update_screen(screen, board)
             else:
                 # Computer
-                print("--------------------------")
                 # move = ai.minimax_root(depth, board, False)
                 # # move = chess.Move.from_uci(str(move))
                 # board.push(move)

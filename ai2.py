@@ -1,6 +1,10 @@
 import chess
+import Stopwatch
 
 INFINITY = 9999
+
+
+
 
 kings_table = [
 20, 30, 10,  0,  0, 10, 30, 20,
@@ -104,17 +108,22 @@ def evaluation(board : chess.Board) -> int:
     else:
         return -score
 
-def quiescence_search(board : chess.Board, alpha : int, beta : int) -> int:
+def quiescence_search(board : chess.Board, alpha : int, beta : int, max_depth : int) -> int:
     standard_eval = evaluation(board)
+    if max_depth == 0:
+        return standard_eval
     if standard_eval >= beta:
         return beta
     if alpha < standard_eval:
         alpha = standard_eval
     
     for move in board.legal_moves:
+        piece = str(board.piece_at(move.from_square))
         if board.is_capture(move):
+            if piece == 'q' or piece == 'Q':
+                continue
             board.push(move)
-            score = -quiescence_search(board, -beta, -alpha)
+            score = -quiescence_search(board, -beta, -alpha, max_depth-1)
             board.pop()
             if score >= beta:
                 return beta
@@ -125,8 +134,8 @@ def quiescence_search(board : chess.Board, alpha : int, beta : int) -> int:
 def negamax(board : chess.Board, alpha : int, beta : int, depth : int) -> int:
     best_score = -INFINITY
     if depth == 0:
-        # return quiescence_search(board, alpha, beta)
-        return evaluation(board)
+        return quiescence_search(board, alpha, beta, 5)
+        # return evaluation(board)
     for move in board.legal_moves:
         board.push(move)
         score = -negamax(board, -beta, -alpha, depth-1)
@@ -140,6 +149,8 @@ def negamax(board : chess.Board, alpha : int, beta : int, depth : int) -> int:
     return best_score
 
 def find_move(board : chess.Board, depth : int) -> chess.Move:
+    count = Stopwatch.Stopwatch()
+    count.start()
     best_move = chess.Move.null()
     second_best_move = chess.Move.null()
     best_value = -99999
@@ -158,9 +169,9 @@ def find_move(board : chess.Board, depth : int) -> chess.Move:
     print("===================================")
     if board.is_repetition(2):
         print(f'second move {second_best_move}', end="\n")
-        if second_best_move is not None:
+        if second_best_move is not chess.Move.null():
             return second_best_move
-    print(f'best move {best_move}')
+    print(f'best move {best_move} in {count.finish()}')
     return best_move
 
 # b = chess.Board()
