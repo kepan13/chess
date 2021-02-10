@@ -3,9 +3,6 @@ import Stopwatch
 
 INFINITY = 9999
 
-
-
-
 kings_table = [
 20, 30, 10,  0,  0, 10, 30, 20,
 20, 20,  0,  0,  0,  0, 20, 20,
@@ -15,6 +12,17 @@ kings_table = [
 -30,-40,-40,-50,-50,-40,-40,-30,
 -30,-40,-40,-50,-50,-40,-40,-30,
 -30,-40,-40,-50,-50,-40,-40,-30]
+
+endgame_kings_table = [
+-30,-40,-30,-20,-20,-20,-40,-30,
+-30,-30,-30,-30,-30,-30,-30,-30,
+-10,-10, 20, 20, 20, 20,-10,-10,
+ 10, 10, 25, 25, 25, 25, 10, 10,
+ 20, 20, 20, 20, 20, 20, 20, 20,
+ 20, 20, 20, 20, 20, 20, 20, 20,
+ 20, 20, 20, 20, 20, 20, 20, 20,
+ 20, 20, 20, 20, 20, 20, 20, 20
+]
 
 pawns_table = [
  0,  0,  0,  0,  0,  0,  0,  0,
@@ -66,6 +74,8 @@ queens_table = [
 -10,  0,  0,  0,  0,  0,  0,-10,
 -20,-10,-10, -5, -5,-10,-10,-20]
 
+global moves_made
+
 def evaluation(board : chess.Board) -> int:
     # material score
     wp = len(board.pieces(chess.PAWN, chess.WHITE))
@@ -98,8 +108,13 @@ def evaluation(board : chess.Board) -> int:
     queen_pos = sum(queens_table[i] for i in board.pieces(chess.QUEEN, chess.WHITE))
     queen_pos += sum(-queens_table[chess.square_mirror(i)] for i in board.pieces(chess.QUEEN, chess.BLACK))
 
-    kings_pos = sum(kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
-    kings_pos += sum(-kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
+    # kings_pos = 0
+    # if moves_made < 25:
+    #     kings_pos = sum(kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
+    #     kings_pos += sum(-kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
+    # else:
+    kings_pos = sum(endgame_kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
+    kings_pos += sum(-endgame_kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
 
     score = pure_material + pawn_pos + knight_pos + bishop_pos + rook_pos + queen_pos + kings_pos
 
@@ -149,6 +164,9 @@ def negamax(board : chess.Board, alpha : int, beta : int, depth : int) -> int:
     return best_score
 
 def find_move(board : chess.Board, depth : int) -> chess.Move:
+    global moves_made
+    moves_made = board.fullmove_number
+
     count = Stopwatch.Stopwatch()
     count.start()
     best_move = chess.Move.null()
@@ -168,15 +186,9 @@ def find_move(board : chess.Board, depth : int) -> chess.Move:
         board.pop()
     print("===================================")
     if board.is_repetition(2):
-        print(f'second move {second_best_move}', end="\n")
+        print(f'second best move {second_best_move}', end="\n")
         if second_best_move is not chess.Move.null():
             return second_best_move
-    print(f'best move {best_move} in {count.finish()}')
+    print(f'Computer move {best_move} in {count.finish()}s')
     return best_move
 
-# b = chess.Board()
-
-# for i in range(10):
-#     m = find_move(b, 3)
-#     b.push(m)
-#     print(b)

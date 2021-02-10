@@ -16,7 +16,6 @@ sq_size     = 100
 from_color  = (153,153,0)
 to_color    = (102,102,0)
 
-
 LEFTCLICK = 1
 
 pygame.init()
@@ -102,11 +101,12 @@ def main():
     screen = pygame.display.set_mode((900, 900))
     board = chess.Board()
 
+
     draw_board(screen, board)
 
     piece = ''
     while 1:
-        if board.turn:
+        if  board.turn:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     pygame.quit()
@@ -151,10 +151,15 @@ def main():
                     move = chess.Move.from_uci(player_move)
                 
                 if move in board.legal_moves:
-                    print(str(move))
+                    print(f"Player move {str(move)}")
+                    board.push(move)
+                    draw_board(screen, board, chess.Move.null(), (origin_sq, target_sq))
+                elif target_sq[1] == 0 and str_piece == 'P':
+                    move = chess.Move.from_uci(str(move)+'q')
                     board.push(move)
                     draw_board(screen, board, chess.Move.null(), (origin_sq, target_sq))
                 else:
+                    print(target_sq)
                     print("illegal move", move)
                     draw_board(screen, board)
                 move_made = False
