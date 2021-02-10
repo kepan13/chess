@@ -22,11 +22,12 @@ pip install pygame
 pip install python-chess
 ```
 
-# Installation
+# Run the program
 ```
 git clone https://github.com/oscarm3l1n/chess.git
 cd chess
-python3 main.py
+python3 main.py // for the old version
+python3 click_and_drag.py // is the most recent and better one
 ```
 # AI
 Extremely slow, so can't go further than depth 3-4. Plays decent and fast chess at depth 3!
