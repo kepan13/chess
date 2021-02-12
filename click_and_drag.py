@@ -89,9 +89,6 @@ def draw_board(screen : pygame.Surface, board : chess.Board, move = chess.Move.n
         if board.piece_at(i) is not None:
             screen.blit(dict_pieces[piece], pygame.Rect(sq_size + col*sq_size, row*sq_size, sq_size, sq_size))
 
-def handle_player_input(board, origin, target):
-    pass
-
 def main():
     button_clicked = False
     move_made = False
@@ -101,23 +98,24 @@ def main():
     screen = pygame.display.set_mode((900, 900))
     board = chess.Board()
 
-
     draw_board(screen, board)
+
+    board_state = []
 
     piece = ''
     while 1:
-        if  board.turn:
+        if board.turn:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit(1)
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_z:
-                        if len(board.move_stack) > 1:
-                            board.pop()
-                            board.pop()
-                            draw_board(screen, board)
-                            print(board)
+                        if len(board_state) >= 2:
+                            board_state.pop()
+                            fen = board_state.pop()
+                            board.set_fen(fen)
+                        draw_board(screen, board)
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if e.button == LEFTCLICK:
                         col, row = pygame.mouse.get_pos()
@@ -135,7 +133,6 @@ def main():
                         target_sq = (abs( sq_size-x) // sq_size, y // sq_size)
                         button_clicked = False
                         move_made = True
-                        handle_player_input(board, origin_sq, target_sq)
 
                 if button_clicked and (str_piece != 'None'):
                     x, y = pygame.mouse.get_pos()
@@ -152,19 +149,22 @@ def main():
                 
                 if move in board.legal_moves:
                     print(f"Player move {str(move)}")
+                    # Custom move stack
+                    board_state.append(board.fen())
                     board.push(move)
                     draw_board(screen, board, chess.Move.null(), (origin_sq, target_sq))
                 elif target_sq[1] == 0 and str_piece == 'P':
                     move = chess.Move.from_uci(str(move)+'q')
+                    board_state.append(board.fen())
                     board.push(move)
                     draw_board(screen, board, chess.Move.null(), (origin_sq, target_sq))
                 else:
-                    print(target_sq)
                     print("illegal move", move)
                     draw_board(screen, board)
                 move_made = False
         else:
             computer_move = ai2.find_move(board, 3)
+            board_state.append(board.fen())
             board.push(computer_move)
             draw_board(screen, board, computer_move)
 
