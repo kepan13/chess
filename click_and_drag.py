@@ -104,7 +104,7 @@ def main():
 
     piece = ''
     while 1:
-        if board.turn:
+        if  not board.turn:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     pygame.quit()

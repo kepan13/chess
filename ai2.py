@@ -108,13 +108,13 @@ def evaluation(board : chess.Board) -> int:
     queen_pos = sum(queens_table[i] for i in board.pieces(chess.QUEEN, chess.WHITE))
     queen_pos += sum(-queens_table[chess.square_mirror(i)] for i in board.pieces(chess.QUEEN, chess.BLACK))
 
-    # kings_pos = 0
-    # if moves_made < 25:
-    #     kings_pos = sum(kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
-    #     kings_pos += sum(-kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
-    # else:
-    kings_pos = sum(endgame_kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
-    kings_pos += sum(-endgame_kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
+    kings_pos = 0
+    if moves_made < 25:
+        kings_pos = sum(kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
+        kings_pos += sum(-kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
+    else:
+        kings_pos = sum(endgame_kings_table[i] for i in board.pieces(chess.KING, chess.WHITE))
+        kings_pos += sum(-endgame_kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, chess.BLACK))
 
     score = pure_material + pawn_pos + knight_pos + bishop_pos + rook_pos + queen_pos + kings_pos
 
