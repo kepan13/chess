@@ -48,7 +48,7 @@ def draw_board(screen : pygame.Surface, board : chess.Board, move = chess.Move.n
             pygame.draw.rect(screen, color, (sq_size + col*sq_size, row*sq_size, sq_size, sq_size))
     
     # Print files & burly_wood square in the down-left corner
-    files = ['a','b','c','d','e','f','g','h']
+    files = ['A','B','C','D','E','F','G','H']
     pygame.draw.rect(screen, black, (0, 900-sq_size, sq_size, sq_size))
     for i in range(8):
         pygame.draw.rect(screen, side_color, (sq_size + i * sq_size, 900-sq_size, sq_size, sq_size))
