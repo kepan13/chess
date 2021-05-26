@@ -31,3 +31,6 @@ python3 click_and_drag.py // is the most recent and better one
 ```
 # AI
 Extremely slow, so can't go further than depth 3-4. Plays decent and fast chess at depth 3!
+
+
+TEST
