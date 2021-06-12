@@ -34,3 +34,4 @@ Extremely slow, so can't go further than depth 3-4. Plays decent and fast chess 
 
 
 TEST
+test
